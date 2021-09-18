@@ -1,9 +1,9 @@
 import torch
 
 
-class SampleLoss(torch.nn.Module):
+class Loss(torch.nn.Module):
   def __init__(self):
-    super(SampleLoss, self).__init__()
+    super(Loss, self).__init__()
 
   def forward(self, x, y):
     return torch.abs(x - y).sum()
