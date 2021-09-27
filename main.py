@@ -70,7 +70,7 @@ if __name__ == '__main__':
     T.Normalize((0.1307,), (0.3081,))
   ])
 
-  optimiser = torch.optim.Adadelta(model.parameters(), lr=.01)
+  optimiser = torch.optim.Adadelta(model.parameters(), lr=.1)
   options = {
     'model': model,
     'loss_fn': Loss(),

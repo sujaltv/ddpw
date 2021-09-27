@@ -57,7 +57,7 @@ class DDPWrapper(object):
           logger.log(LoggerType.Scalar, {'Loss': loss}, e)
 
       if (e > 0 and e % ckpt_every == 0) or (e == epochs - 1):
-        if ((self.platform == Platform.CLGPU or \
+        if ((self.platform == Platform.GPU or \
           self.platform == Platform.SLURM) and pid == 0) or \
           self.platform == Platform.CPU:
           print(f'Saving at epoch {e}')
