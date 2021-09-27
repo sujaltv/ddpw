@@ -57,7 +57,7 @@ class DDPWrapper(object):
           logger.log(LoggerType.Scalar, {'Loss': loss}, e)
 
       if (e > 0 and e % ckpt_every == 0) or (e == epochs - 1):
-        if ((self.platform == Platform.CLGPU or \
+        if ((self.platform == Platform.GPU or \
           self.platform == Platform.SLURM) and pid == 0) or \
           self.platform == Platform.CPU:
           print(f'Saving at epoch {e}')
@@ -124,7 +124,7 @@ class DDPWrapper(object):
       executor.update_parameters(init_method, self.train, self.nprocs)
       executor.submit(options)
     elif self.platform == Platform.SLURM:
-      hostname = os.environ.get('HOSTNAME', None)
+      hostname = os.environ.get('HOSTNAME', 'localhost')
       gpus_per_node = int(os.environ.get('SLURM_GPUS_PER_NODE', 1))
       num_nodes = int(os.environ.get('SLURM_JOB_NUM_NODES', 1))
       partition = os.environ.get('SLURM_JOB_PARTITION', 'general')

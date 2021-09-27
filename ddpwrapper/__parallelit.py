@@ -35,6 +35,7 @@ class AutoExecutor(object):
     np.random.seed(self.seed)
     torch.cuda.manual_seed_all(self.seed)
 
+    print('op')
     dist.barrier()
 
     gpu = args.get('local_rank', pid)
@@ -65,7 +66,7 @@ class AutoExecutor(object):
     self.trainer(model, dataloader, optimiser, loss_fn, optimiser_step, epochs,
                  ckpt_every, pid=pid, logger=logger)
 
-    dist.barrier()
+    dist.barrier(device_ids=[pid])
     print('post-trainer')
     dist.destroy_process_group()
     print('post-destruction')

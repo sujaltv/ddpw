@@ -20,10 +20,11 @@ class CustomTrainer(Trainer):
     device = torch.device('cpu')
     if hasattr(model, 'device'): device = torch.device(model.device)
 
+    print('Just before starting!')
     for _, (datapoints, labels) in enumerate(dataloader):
       optimiser.zero_grad() # reset the gradients
       loss = loss_fn(model(datapoints), labels.to(device))
-      loss.backward()
+      # loss.backward()
       optimiser.step() # update the model parameters
 
     if optim_step is not None:
@@ -81,8 +82,8 @@ if __name__ == '__main__':
     'nprocs': 2
   }
 
-  job = DDPWrapper(platform=Platform.GPU, **options)
-  job.start(epochs=50, ckpt_every=5, ckpt_dir='./models/multigpu', batch_size=64, logdir=log_dir)
+  job = DDPWrapper(platform=Platform.SLURM, **options)
+  job.start(epochs=10, ckpt_every=5, ckpt_dir='./models', batch_size=64, logdir=log_dir)
   # job.evaluate(ckpt_dir='models', ckpt=49).print()
   # job.resume(epochs=100, ckpt_every=25, ckpt_dir='./models', ckpt=50, logdir=log_dir)
   # print(list(job.model.parameters()))
