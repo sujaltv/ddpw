@@ -7,7 +7,7 @@ from torch.nn.modules.loss import _Loss as Loss
 from torch.optim.lr_scheduler import _LRScheduler as LRScheduler
 
 from .__platform import Platform
-from .__trainer import Trainer
+from .__trainer import Trainer, EvalMetrics
 from .__logger import Logger, LoggerType
 from .__parallelit import AutoExecutor
 
@@ -15,7 +15,7 @@ from .__parallelit import AutoExecutor
 class DDPWrapper(object):
   model_has_batchnorm: bool = False
 
-  platform: Platform = Platform.CLGPU
+  platform: Platform = Platform.GPU
   nprocs: int = 1
 
   world_size: int = 1
@@ -52,10 +52,8 @@ class DDPWrapper(object):
           dist.reduce(loss_reduced, dst=0)
           loss_reduced = loss_reduced / self.nprocs
           if pid == 0:
-            # print({'Loss': loss_reduced}, e)
             logger.log(LoggerType.Scalar, {'Loss': loss}, e)
         else:
-          # print({'Loss': loss}, e)
           logger.log(LoggerType.Scalar, {'Loss': loss}, e)
 
       if (e > 0 and e % ckpt_every == 0) or (e == epochs - 1):
@@ -78,16 +76,27 @@ class DDPWrapper(object):
     }
     torch.save(checkpoint, os.path.join(self.ckpt_dir, f'ckpt_{epoch}.pt'))
 
-  def resume(self, epochs, ckpt_every, ckpt_dir, ckpt, logdir: str=None):
+  def evaluate(self, ckpt_dir, ckpt) -> EvalMetrics:
+    file_path = os.path.join(ckpt_dir, f'ckpt_{ckpt}.pt')
+    assert os.path.isfile(file_path)
+    checkpoint = torch.load(file_path)
+    self.model.load_state_dict(checkpoint['model'])
+    dataloader = torch.utils.data.DataLoader(self.dataset,
+                                batch_size=20,
+                                pin_memory=True, num_workers=4)
+    return self.trainer.evaluate(self.model, dataloader)
+
+  def resume(self, epochs, ckpt_every, ckpt_dir, ckpt, batch_size=64,
+             logdir: str=None):
     file_path = os.path.join(ckpt_dir, f'ckpt_{ckpt}.pt')
     assert os.path.isfile(file_path)
     checkpoint = torch.load(file_path)
     self.start_at = checkpoint['epoch']
     self.model.load_state_dict(checkpoint['model'])
     self.optimiser.load_state_dict(checkpoint['optimiser'])
-    self.start(epochs, ckpt_every, ckpt_dir, logdir)
+    self.start(epochs, ckpt_every, ckpt_dir, batch_size, logdir)
 
-  def start(self, epochs, ckpt_every, ckpt_dir, logdir: str=None):
+  def start(self, epochs, ckpt_every, ckpt_dir, batch_size=64, logdir: str=None):
     self.ckpt_dir = ckpt_dir
     options = {
         'model': self.model,
@@ -102,12 +111,13 @@ class DDPWrapper(object):
 
     if self.platform == Platform.CPU:
       options['dataset'] = torch.utils.data.DataLoader(self.dataset,
-                                                       batch_size=100,
+                                                       batch_size=batch_size,
                                                        pin_memory=False)
       device = torch.device('cpu')
       options['model'] = self.model.to(device)
+      print('Starting')
       self.train(**options, logger=Logger(logdir) if logdir else logdir)
-    elif self.platform == Platform.CLGPU:
+    elif self.platform == Platform.GPU:
       init_method = 'tcp://localhost:1640'
 
       executor = AutoExecutor()

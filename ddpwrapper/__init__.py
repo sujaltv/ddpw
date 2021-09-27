@@ -1,4 +1,4 @@
 from .__wrapper import DDPWrapper
 from .__platform import Platform
-from .__trainer import Trainer
+from .__trainer import Trainer, EvalMetrics
 from .__logger import Logger, LoggerType
