@@ -70,7 +70,7 @@ and the related classes are used.
 
       ...
 
-      job = DDPWrapper(platform=Platform.CLGPU, ...)
+      job = DDPWrapper(platform=Platform.GPU, ...)
       job.start(epochs=20, ckpt_every=5)
 
 2. **SLURM-based cluster environment**. Training on a SLURM-based cluster
