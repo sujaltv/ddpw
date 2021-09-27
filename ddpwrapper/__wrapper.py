@@ -46,7 +46,7 @@ class DDPWrapper(object):
       # barrier and reduce all
 
       if logger is not None or True:
-        if self.platform == Platform.CLGPU:
+        if self.platform != Platform.CPU:
           dist.barrier()
           loss_reduced = loss.detach().clone()
           dist.reduce(loss_reduced, dst=0)
@@ -59,7 +59,8 @@ class DDPWrapper(object):
           logger.log(LoggerType.Scalar, {'Loss': loss}, e)
 
       if (e > 0 and e % ckpt_every == 0) or (e == epochs - 1):
-        if (self.platform == Platform.CLGPU and pid == 0) or \
+        if ((self.platform == Platform.CLGPU or \
+          self.platform == Platform.SLURM) and pid == 0) or \
           self.platform == Platform.CPU:
           print(f'Saving at epoch {e}')
           self.__save(e)
@@ -95,7 +96,8 @@ class DDPWrapper(object):
         'optimiser_step': self.optimiser_step,
         'epochs': epochs,
         'dataset': self.dataset,
-        'ckpt_every': ckpt_every
+        'ckpt_every': ckpt_every,
+        'logdir': logdir
     }
 
     if self.platform == Platform.CPU:
@@ -107,7 +109,6 @@ class DDPWrapper(object):
       self.train(**options, logger=Logger(logdir) if logdir else logdir)
     elif self.platform == Platform.CLGPU:
       init_method = 'tcp://localhost:1640'
-      if logdir is not None: options['logdir'] = logdir
 
       executor = AutoExecutor()
       executor.update_parameters(init_method, self.train, self.nprocs)
@@ -119,6 +120,8 @@ class DDPWrapper(object):
       partition = os.environ.get('SLURM_JOB_PARTITION', 'general')
 
       init_method = f'tcp://{hostname}:1640'
+      os.environ['MASTER_ADDR'] = hostname
+      os.environ['MASTER_PORT'] = '1640'
       executor = submitit.AutoExecutor(logdir)
       executor.update_parameters(
         mem_gb=12*gpus_per_node,
@@ -130,13 +133,14 @@ class DDPWrapper(object):
       )
 
       world_size = gpus_per_node * num_nodes
-      executor = AutoExecutor()
-      executor.update_parameters(init_method, self.train, world_size)
+      parallel_exec = AutoExecutor()
+      parallel_exec.update_parameters(init_method, self.train, world_size)
 
       def wrapper():
         job_env = submitit.JobEnvironment()
+        options['local_rank'] = job_env.local_rank
         pid = int(job_env.global_rank)
-        executor.dist_init(pid, (options,))
+        parallel_exec.dist_init(pid, options)
 
       job = executor.submit(wrapper)
       print('Job ID: ', job.job_id)

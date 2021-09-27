@@ -23,8 +23,9 @@ class AutoExecutor(object):
     self.trainer = trainer
 
   def dist_init(self, pid, args):
+    print('Communication through ', self.init_method)
     dist.init_process_group(
-      backend=dist.Backend.NCCL,
+      backend=dist.Backend.GLOO,
       init_method=self.init_method,
       world_size=self.nprocs,
       rank=pid
@@ -34,7 +35,11 @@ class AutoExecutor(object):
     np.random.seed(self.seed)
     torch.cuda.manual_seed_all(self.seed)
 
-    torch.cuda.set_device(pid)
+    dist.barrier()
+
+    gpu = args.get('local_rank', pid)
+
+    torch.cuda.set_device(gpu)
 
     model = args['model']
     dataset = args['dataset']
@@ -44,20 +49,26 @@ class AutoExecutor(object):
     epochs = args['epochs']
     ckpt_every = args['ckpt_every']
 
-    model = DistributedDataParallel(model.cuda(pid), [pid])
+    model.to(gpu)
+    model = DistributedDataParallel(model, [pid])
     smplr = DistributedSampler(dataset, num_replicas=self.nprocs, rank=pid)
     dataloader = DataLoader(dataset, batch_size=100, pin_memory=True,
                          sampler=smplr)
 
     optimiser.params = model.parameters()
-    dist.barrier(device_ids=[pid])
+    print('pre-barrier')
+    dist.barrier()
+    # dist.barrier(device_ids=[pid])
 
     logger = Logger(args['logdir']) if pid == 0 else None
 
     self.trainer(model, dataloader, optimiser, loss_fn, optimiser_step, epochs,
                  ckpt_every, pid=pid, logger=logger)
 
+    dist.barrier()
+    print('post-trainer')
     dist.destroy_process_group()
+    print('post-destruction')
 
   def submit(self, args: tp.Dict) -> None:
     mp.spawn(self.dist_init, (args,), nprocs=self.nprocs)
