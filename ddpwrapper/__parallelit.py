@@ -23,7 +23,6 @@ class AutoExecutor(object):
     self.trainer = trainer
 
   def dist_init(self, pid, args):
-    print('Communication through ', self.init_method)
     dist.init_process_group(
       backend=dist.Backend.GLOO,
       init_method=self.init_method,
@@ -35,7 +34,6 @@ class AutoExecutor(object):
     np.random.seed(self.seed)
     torch.cuda.manual_seed_all(self.seed)
 
-    print('op')
     dist.barrier()
 
     gpu = args.get('local_rank', pid)
@@ -57,19 +55,14 @@ class AutoExecutor(object):
                          sampler=smplr)
 
     optimiser.params = model.parameters()
-    print('pre-barrier')
-    dist.barrier()
-    # dist.barrier(device_ids=[pid])
 
     logger = Logger(args['logdir']) if pid == 0 else None
 
     self.trainer(model, dataloader, optimiser, loss_fn, optimiser_step, epochs,
                  ckpt_every, pid=pid, logger=logger)
 
-    dist.barrier(device_ids=[pid])
-    print('post-trainer')
+    dist.barrier()
     dist.destroy_process_group()
-    print('post-destruction')
 
   def submit(self, args: tp.Dict) -> None:
     mp.spawn(self.dist_init, (args,), nprocs=self.nprocs)
