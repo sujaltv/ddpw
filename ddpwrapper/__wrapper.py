@@ -1,4 +1,5 @@
 import os
+import time
 
 import torch
 import submitit
@@ -24,7 +25,8 @@ class DDPWrapper(object):
 
   def __init__(self, platform: Platform, model: torch.nn.Module, dataset: torch.utils.data.Dataset,
                loss_fn: Loss, optimiser: torch.optim.Optimizer, trainer: Trainer,
-               optimiser_step: LRScheduler = None, nprocs: int = 1):
+               optimiser_step: LRScheduler = None, nprocs: int = 1,
+              validate = False, validation_dataset = None):
     self.platform = platform
     assert nprocs > 0
     self.nprocs = nprocs
@@ -35,15 +37,30 @@ class DDPWrapper(object):
     self.optimiser = optimiser
     self.trainer = trainer
     self.optimiser_step = optimiser_step
+    self.validate = validate
+    self.validation_dataset = validation_dataset
 
   def train(self, model, dataset, optimiser, loss_fn, optimiser_step, epochs,
-              ckpt_every, pid=0, logger: Logger=None):
+              ckpt_every, pid=0, logger: Logger=None,
+              validate = False, validation_dataset = None):
     # start training
+    validation_accuracy = None
+
     for e in range(self.start_at, epochs):
       loss = self.trainer.train(model, dataset, loss_fn, optimiser,
                                 optimiser_step)
 
+      if validate and logger is not None:
+        assert validation_dataset is not None
+        validation_accuracy = self.trainer.evaluate(model, validation_dataset)
+
       # barrier and reduce all
+      def common_logger():
+        logger.log(LoggerType.Scalar, {'Loss': loss}, e)
+        if validation_accuracy is not None:
+          logger.log(LoggerType.Scalar, {
+            'ValAccuracy': validation_accuracy.accuracy
+          }, e)
 
       if logger is not None or True:
         if self.platform != Platform.CPU:
@@ -51,17 +68,16 @@ class DDPWrapper(object):
           loss_reduced = loss.detach().clone()
           dist.reduce(loss_reduced, dst=0)
           loss_reduced = loss_reduced / self.nprocs
-          if pid == 0:
-            logger.log(LoggerType.Scalar, {'Loss': loss}, e)
-        else:
-          logger.log(LoggerType.Scalar, {'Loss': loss}, e)
+          if pid == 0: common_logger()
+        else: common_logger()
 
       if (e > 0 and e % ckpt_every == 0) or (e == epochs - 1):
         if ((self.platform == Platform.GPU or \
           self.platform == Platform.SLURM) and pid == 0) or \
           self.platform == Platform.CPU:
-          print(f'Saving at epoch {e}')
           self.__save(e)
+
+      # time.sleep(30 * 60)
 
     if logger is not None:
       logger.close()
@@ -106,32 +122,29 @@ class DDPWrapper(object):
         'epochs': epochs,
         'dataset': self.dataset,
         'ckpt_every': ckpt_every,
-        'logdir': logdir
+        'logdir': logdir,
+        'validate': self.validate,
+        'batch_size': batch_size,
+        'validation_dataset': self.validation_dataset
     }
+    hostname = os.environ.get('HOSTNAME', 'localhost')
+    init_method = 'tcp://localhost:1641'
 
     if self.platform == Platform.CPU:
-      options['dataset'] = torch.utils.data.DataLoader(self.dataset,
-                                                       batch_size=batch_size,
-                                                       pin_memory=False)
-      device = torch.device('cpu')
-      options['model'] = self.model.to(device)
-      print('Starting')
-      self.train(**options, logger=Logger(logdir) if logdir else logdir)
-    elif self.platform == Platform.GPU:
-      init_method = 'tcp://localhost:1640'
-
       executor = AutoExecutor()
-      executor.update_parameters(init_method, self.train, self.nprocs)
+      executor.update_parameters(self.train, init_method, self.nprocs)
+      executor.cpu_init(**options)
+    elif self.platform == Platform.GPU:
+      executor = AutoExecutor()
+      executor.update_parameters(self.train, init_method, self.nprocs)
       executor.submit(options)
     elif self.platform == Platform.SLURM:
-      hostname = os.environ.get('HOSTNAME', 'localhost')
       gpus_per_node = int(os.environ.get('SLURM_GPUS_PER_NODE', 1))
       num_nodes = int(os.environ.get('SLURM_JOB_NUM_NODES', 1))
       partition = os.environ.get('SLURM_JOB_PARTITION', 'general')
 
-      init_method = f'tcp://{hostname}:1640'
       os.environ['MASTER_ADDR'] = hostname
-      os.environ['MASTER_PORT'] = '1640'
+      os.environ['MASTER_PORT'] = '1641'
       executor = submitit.AutoExecutor(logdir)
       executor.update_parameters(
         mem_gb=12*gpus_per_node,
@@ -144,7 +157,7 @@ class DDPWrapper(object):
 
       world_size = gpus_per_node * num_nodes
       parallel_exec = AutoExecutor()
-      parallel_exec.update_parameters(init_method, self.train, world_size)
+      parallel_exec.update_parameters(self.train, init_method, world_size)
 
       def wrapper():
         job_env = submitit.JobEnvironment()

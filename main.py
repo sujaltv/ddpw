@@ -20,7 +20,6 @@ class CustomTrainer(Trainer):
     device = torch.device('cpu')
     if hasattr(model, 'device'): device = torch.device(model.device)
 
-    print('Just before starting!')
     for _, (datapoints, labels) in enumerate(dataloader):
       optimiser.zero_grad() # reset the gradients
       loss = loss_fn(model(datapoints), labels.to(device))
@@ -29,7 +28,6 @@ class CustomTrainer(Trainer):
 
     if optim_step is not None:
       optim_step.step()
-    print('done with the training')
     return loss
 
   def loss(self, model: Net, dataloader: torch.utils.data.DataLoader,
@@ -71,19 +69,23 @@ if __name__ == '__main__':
     T.Normalize((0.1307,), (0.3081,))
   ])
 
-  optimiser = torch.optim.Adadelta(model.parameters(), lr=.1)
+  pre_split = Dataset(root='data', download=True, train=True, transform=transformations)
+  train_set, val_set = torch.utils.data.random_split(pre_split, [50000, 10000])
+
+  optimiser = torch.optim.Adadelta(model.parameters(), lr=.034)
   options = {
     'model': model,
     'loss_fn': Loss(),
     'optimiser': optimiser,
     # 'optimiser_step': StepLR(optimiser, step_size=1, gamma=0.7),
-    'dataset': Dataset(root='data', download=True, train=True, transform=transformations),
+    'dataset': train_set,
     'trainer': CustomTrainer(),
-    'nprocs': 2
+    # 'validate': True,
+    # 'validation_dataset': val_set,
+    'nprocs': 1
   }
 
-  job = DDPWrapper(platform=Platform.SLURM, **options)
-  job.start(epochs=5, ckpt_every=2, ckpt_dir='./models', batch_size=64, logdir=log_dir)
+  job = DDPWrapper(platform=Platform.CPU, **options)
+  job.start(epochs=50, ckpt_every=5, ckpt_dir='./models/mulgpu', batch_size=64, logdir=log_dir)
   # job.evaluate(ckpt_dir='models', ckpt=49).print()
   # job.resume(epochs=100, ckpt_every=25, ckpt_dir='./models', ckpt=50, logdir=log_dir)
-  # print(list(job.model.parameters()))

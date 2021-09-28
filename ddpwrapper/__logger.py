@@ -8,6 +8,7 @@ class LoggerType(Enum):
   Scalar = 0
   Scalars = 1
 
+
 class Logger(SummaryWriter):
   def log(self, log_type: LoggerType, item: Dict[str, any], itr: int):
     if log_type == LoggerType.Scalar:
