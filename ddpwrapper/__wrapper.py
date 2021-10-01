@@ -20,13 +20,14 @@ class DDPWrapper(object):
   nprocs: int = 1
 
   world_size: int = 1
-  seed: int = 123
+  seed: int = 1640
   start_at: int = 0
 
-  def __init__(self, platform: Platform, model: torch.nn.Module, dataset: torch.utils.data.Dataset,
-               loss_fn: Loss, optimiser: torch.optim.Optimizer, trainer: Trainer,
+  def __init__(self, platform: Platform, model: torch.nn.Module,
+               dataset: torch.utils.data.Dataset, loss_fn: Loss,
+               optimiser: torch.optim.Optimizer, trainer: Trainer,
                optimiser_step: LRScheduler = None, nprocs: int = 1,
-              validate = False, validation_dataset = None):
+               validate = False, validation_dataset = None):
     self.platform = platform
     assert nprocs > 0
     self.nprocs = nprocs
@@ -41,8 +42,8 @@ class DDPWrapper(object):
     self.validation_dataset = validation_dataset
 
   def train(self, model, dataset, optimiser, loss_fn, optimiser_step, epochs,
-              ckpt_every, pid=0, logger: Logger=None,
-              validate = False, validation_dataset = None):
+            ckpt_every, pid=0, logger: Logger=None, validate = False,
+            validation_dataset = None):
     # start training
     validation_accuracy = None
 
