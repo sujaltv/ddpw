@@ -1,5 +1,4 @@
 import os
-import time
 
 import torch
 import submitit
@@ -20,6 +19,7 @@ class DDPWrapper(object):
   nprocs: int = 1
 
   world_size: int = 1
+  port: int = 1640
   seed: int = 1640
   start_at: int = 0
 
@@ -72,13 +72,12 @@ class DDPWrapper(object):
           if pid == 0: common_logger()
         else: common_logger()
 
-      if (e > 0 and e % ckpt_every == 0) or (e == epochs - 1):
-        if ((self.platform == Platform.GPU or \
-          self.platform == Platform.SLURM) and pid == 0) or \
-          self.platform == Platform.CPU:
-          self.__save(e)
-
-      # time.sleep(30 * 60)
+      if ckpt_every > 0:
+        if (e > 0 and e % ckpt_every == 0) or (e == epochs - 1):
+          if ((self.platform == Platform.GPU or \
+            self.platform == Platform.SLURM) and pid == 0) or \
+            self.platform == Platform.CPU:
+            self.__save(e)
 
     if logger is not None:
       logger.close()
@@ -103,7 +102,7 @@ class DDPWrapper(object):
                                 pin_memory=True, num_workers=4)
     return self.trainer.evaluate(self.model, dataloader)
 
-  def resume(self, epochs, ckpt_every, ckpt_dir, ckpt, batch_size=64,
+  def resume(self, epochs, ckpt_every, ckpt_dir, ckpt, batch_size,
              logdir: str=None):
     file_path = os.path.join(ckpt_dir, f'ckpt_{ckpt}.pt')
     assert os.path.isfile(file_path)
@@ -129,7 +128,7 @@ class DDPWrapper(object):
         'validation_dataset': self.validation_dataset
     }
     hostname = os.environ.get('HOSTNAME', 'localhost')
-    init_method = 'tcp://localhost:1641'
+    init_method = f'tcp://{hostname}:{self.port}'
 
     if self.platform == Platform.CPU:
       executor = AutoExecutor()
@@ -145,8 +144,8 @@ class DDPWrapper(object):
       partition = os.environ.get('SLURM_JOB_PARTITION', 'general')
 
       os.environ['MASTER_ADDR'] = hostname
-      os.environ['MASTER_PORT'] = '1641'
-      executor = submitit.AutoExecutor(logdir)
+      os.environ['MASTER_PORT'] = str(self.port)
+      executor = submitit.AutoExecutor(logdir or './runs')
       executor.update_parameters(
         mem_gb=12*gpus_per_node,
         nodes=num_nodes,
