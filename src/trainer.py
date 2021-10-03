@@ -3,7 +3,7 @@ from torch.optim.lr_scheduler import _LRScheduler as LRScheduler, StepLR
 
 from src.loss import Loss
 from src.model import Net
-from ddpwrapper import Trainer, EvalMetrics
+from ddpwrapper import Trainer, EvalMetrics, optimizer_to
 
 
 class CustomTrainer(Trainer):
@@ -14,6 +14,7 @@ class CustomTrainer(Trainer):
 
     device = torch.device('cpu')
     if hasattr(model, 'device'): device = torch.device(model.device)
+    optimizer_to(optimiser, device)
 
     for _, (datapoints, labels) in enumerate(dataloader):
       optimiser.zero_grad() # reset the gradients

@@ -58,7 +58,7 @@ class CommandType(Enum):
 
 
 def wrapper(flag: CommandType, **kwargs):
-  if kwargs['ckpt_freq'] == 0:
+  if kwargs['ckpt_freq'] != 0:
     if not os.path.isdir(kwargs['ckpt_dir']):
       os.mkdir(kwargs['ckpt_dir'], mode=0o775)
 
@@ -72,14 +72,17 @@ def wrapper(flag: CommandType, **kwargs):
     T.Normalize((0.1307,), (0.3081,))
   ])
 
-  train_set = Dataset(root='data', download=True, train=True, transform=transformations)
+  train_set = Dataset(root='data', download=True,
+                      train=flag!=CommandType.Evaluate,
+                      transform=transformations)
   val_set = None
 
-  if kwargs['validate'] > 0:
+  if flag!=CommandType.Evaluate and kwargs['validate'] > 0:
     total_size = len(train_set)
     val_size = total_size - (kwargs['validate'] * total_size // 100)
     train_size = total_size - val_size
-    train_set, val_set = torch.utils.data.random_split(train_set, [train_size, val_size])
+    train_set, val_set = torch.utils.data.random_split(train_set,
+                                                       [train_size, val_size])
 
 
   optimiser = torch.optim.Adadelta(model.parameters(), lr=.034)
@@ -115,6 +118,7 @@ def wrapper(flag: CommandType, **kwargs):
     )
   elif flag == CommandType.Resume:
     job.resume(
+      platform=platform,
       epochs=kwargs['epochs'],
       ckpt_every=kwargs['ckpt_freq'],
       ckpt=kwargs['ckpt'],
@@ -129,18 +133,18 @@ def wrapper(flag: CommandType, **kwargs):
     ).print()
 
 
-@click.command()
+@click.command(help='Start training a model afresh')
 @add_click_options(train_resume_options)
 def train(**kwargs):
   wrapper(CommandType.Train, **kwargs)
 
-@click.command()
+@click.command(help='Resume training from a given model')
 @add_click_options(train_resume_options)
 @add_click_options(model_option)
 def resume(**kwargs):
   wrapper(CommandType.Resume, **kwargs)
 
-@click.command()
+@click.command(help='Evaluate an already trained model')
 @add_click_options(train_resume_options)
 @add_click_options(model_option)
 def evaluate(**kwargs):
