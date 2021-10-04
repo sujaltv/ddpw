@@ -88,7 +88,7 @@ def wrapper(flag: CommandType, **kwargs):
                                                        [train_size, val_size])
 
 
-  optimiser = torch.optim.Adadelta(model.parameters(), lr=.034)
+  optimiser = torch.optim.Adadelta(model.parameters(), lr=.1)
   options = {
     'model': model,
     'loss_fn': Loss(),
@@ -112,7 +112,6 @@ def wrapper(flag: CommandType, **kwargs):
   job.seed = kwargs['seed']
 
   if flag == CommandType.Train:
-    print('Starting train')
     job.start(
       epochs=kwargs['epochs'],
       ckpt_every=kwargs['ckpt_freq'],
@@ -140,7 +139,6 @@ def wrapper(flag: CommandType, **kwargs):
 @click.command(help='Start training a model afresh')
 @add_click_options(train_resume_options)
 def train(**kwargs):
-  print('Wrapper called with train')
   wrapper(CommandType.Train, **kwargs)
 
 @click.command(help='Resume training from a given model')

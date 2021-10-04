@@ -25,24 +25,23 @@ class AutoExecutor(object):
     self.trainer = trainer
 
   def dist_init(self, pid, args):
-    print('Initing...', self.init_method, self.nprocs, pid)
     dist.init_process_group(
       backend=dist.Backend.GLOO,
       init_method=self.init_method,
       world_size=self.nprocs,
       rank=pid
     )
-    print('Step 2')
+
     torch.manual_seed(self.seed)
     np.random.seed(self.seed)
     torch.cuda.manual_seed_all(self.seed)
-    print('Step 3')
+
     dist.barrier()
-    print('Step 4')
+
     gpu = args.get('local_rank', pid)
-    print('Step 5')
+
     torch.cuda.set_device(gpu)
-    print('Step 6')
+
     model = args['model']
     dataset = args['dataset']
     optimiser = args['optimiser']
@@ -52,14 +51,12 @@ class AutoExecutor(object):
     ckpt_every = args['ckpt_every']
     validate = args['validate']
     validation_dataset = args['validation_dataset']
-    print('Step 7')
+
     model.to(gpu)
-    print('Step 8')
     model = DistributedDataParallel(model, [pid])
     smplr = DistributedSampler(dataset, num_replicas=self.nprocs, rank=pid)
     dataloader = DataLoader(dataset, batch_size=100, pin_memory=True,
                          sampler=smplr)
-    print('Step 9')
     validation_dataloader = None
     if validate:
       smplr2 = DistributedSampler(validation_dataset, num_replicas=self.nprocs,
@@ -67,11 +64,9 @@ class AutoExecutor(object):
       validation_dataloader = DataLoader(validation_dataset,
                                          batch_size=len(validation_dataset),
                                          pin_memory=True, sampler=smplr2)
-    print('Step 10')
+
     optimiser.params = model.parameters()
-    print('Step 11')
     logger = Logger(args['logdir']) if pid == 0 else None
-    print('Step 12')
     self.trainer(model, dataloader, optimiser, loss_fn, optimiser_step, epochs,
                  ckpt_every, pid=pid, logger=logger, validate=validate,
                  validation_dataset=validation_dataloader)
