@@ -26,6 +26,8 @@ train_resume_options = [
                 help='Is logging required?'),
   click.option('-ckpt-freq', type=int, required=False, default=0, show_default=True,
                 help='How frequently to save checkpoints. Pass 0 to not save any'),
+  click.option('-runs', type=str, required=False, default='runs', show_default=True,
+                help='Runs folder'),
   click.option('-ckpt-dir', type=str, required=False, default='./models', show_default=True,
                 help='Directory to store checkpoints in. Used only if -ckpt-freq is not zero'),
   click.option('-e', '--epochs', type=int, required=False, default=50, show_default=True,
@@ -64,7 +66,8 @@ def wrapper(flag: CommandType, **kwargs):
 
   model = Net()
 
-  log_dir = f'runs/{datetime.now().strftime("%I:%M:%S%p_%a_%d_%b_%Y")}'
+  r = kwargs["runs"]
+  log_dir = f'{r}/{datetime.now().strftime("%I:%M:%S%p_%a_%d_%b_%Y")}'
 
   transformations = T.Compose([
     T.ToTensor(),
@@ -109,6 +112,7 @@ def wrapper(flag: CommandType, **kwargs):
   job.seed = kwargs['seed']
 
   if flag == CommandType.Train:
+    print('Starting train')
     job.start(
       epochs=kwargs['epochs'],
       ckpt_every=kwargs['ckpt_freq'],
@@ -136,6 +140,7 @@ def wrapper(flag: CommandType, **kwargs):
 @click.command(help='Start training a model afresh')
 @add_click_options(train_resume_options)
 def train(**kwargs):
+  print('Wrapper called with train')
   wrapper(CommandType.Train, **kwargs)
 
 @click.command(help='Resume training from a given model')

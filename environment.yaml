@@ -8,13 +8,14 @@ dependencies:
   - _openmp_mutex=4.5
   - blas=1.0
   - bzip2=1.0.8
-  - ca-certificates=2021.5.30
+  - ca-certificates=2021.7.5
   - certifi=2021.5.30
   - click=8.0.1
   - cloudpickle=2.0.0
   - cudatoolkit=10.2.89
   - ffmpeg=4.3
   - freetype=2.10.4
+  - gettext=0.19.8.1
   - gmp=6.2.1
   - gnutls=3.6.15
   - intel-openmp=2021.3.0
@@ -22,6 +23,7 @@ dependencies:
   - lame=3.100
   - lcms2=2.12
   - ld_impl_linux-64=2.35.1
+  - libevent=2.1.10
   - libffi=3.3
   - libgcc-ng=9.3.0
   - libgomp=9.3.0
@@ -34,6 +36,8 @@ dependencies:
   - libunistring=0.9.10
   - libuv=1.40.0
   - libwebp-base=1.2.0
+  - libzlib=1.2.11
+  - llvm-openmp=12.0.1
   - lz4-c=1.9.3
   - mkl=2021.3.0
   - mkl-service=2.4.0
@@ -57,7 +61,9 @@ dependencies:
   - six=1.16.0
   - sqlite=3.36.0
   - submitit=1.2.1
+  - tbb=2021.3.0
   - tk=8.6.11
+  - tmux=3.1
   - torchvision=0.10.1
   - typing_extensions=3.10.0.2
   - tzdata=2021a
@@ -87,4 +93,4 @@ dependencies:
     - tensorboard-plugin-wit==1.8.0
     - urllib3==1.26.7
     - werkzeug==2.0.1
-prefix: /home/sujal/.conda/envs/ddp
+prefix: /home/s/sujal/.conda/envs/ddp

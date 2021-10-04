@@ -6,13 +6,10 @@ import torch.distributed as dist
 from torch.nn.modules.loss import _Loss as Loss
 from torch.optim.lr_scheduler import _LRScheduler as LRScheduler
 
-from ddpwrapper import utils
-
 from .__platform import Platform
 from .__trainer import Trainer, EvalMetrics
 from .__logger import Logger, LoggerType
 from .__parallelit import AutoExecutor
-from .utils import optimizer_to
 
 class DDPWrapper(object):
   model_has_batchnorm: bool = False
@@ -106,11 +103,9 @@ class DDPWrapper(object):
 
   def resume(self, epochs, ckpt_every, ckpt_dir, ckpt, batch_size, platform,
              logdir: str=None):
-    # if platform is not Platform.CPU:
-    #   self.model.cuda()
     file_path = os.path.join(ckpt_dir, f'ckpt_{ckpt}.pt')
     assert os.path.isfile(file_path)
-    checkpoint = torch.load(file_path)#, map_location='cuda')
+    checkpoint = torch.load(file_path)
     self.start_at = checkpoint['epoch']
     self.model.load_state_dict(checkpoint['model'])
     self.optimiser.load_state_dict(checkpoint['optimiser'])
@@ -149,7 +144,7 @@ class DDPWrapper(object):
 
       os.environ['MASTER_ADDR'] = hostname
       os.environ['MASTER_PORT'] = str(self.port)
-      executor = submitit.AutoExecutor(logdir or './runs')
+      executor = submitit.AutoExecutor(logdir)
       executor.update_parameters(
         mem_gb=12*gpus_per_node,
         nodes=num_nodes,
