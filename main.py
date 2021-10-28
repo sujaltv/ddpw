@@ -12,8 +12,24 @@ from src.loss import Loss
 from src.trainer import CustomTrainer
 from ddpwrapper import DDPWrapper, Platform, add_click_options
 
-
 train_resume_options = [
+  click.option('-e', '--epochs', type=int, required=False, default=50, show_default=True,
+              help='The number of epochs to train'),
+  click.option('-ckpt-freq', type=int, required=False, default=0, show_default=True,
+                help='How frequently to save checkpoints. Pass 0 to not save any'),
+  click.option('-val', '--validate', type=click.IntRange(0, 100), required=False,
+                default=0, show_default=True,
+                help='Percentage of the dataset to set aside for validation at each epoch; 0 implies no validation needed'),
+  click.option('-log', type=bool, required=False, default=True, show_default=True,
+                help='Is logging required?'),
+  click.option('-runs', type=str, required=False, default='runs', show_default=True,
+                help='Runs folder'),
+  click.option('-b', '--batch-size', type=int, required=False, default=64, show_default=True,
+                help='Training batch size'),
+]
+
+
+base_options = [
   click.option('-cpu', type=bool, required=False, default=False, show_default=True,
                 help='Use CPU; mutually exclusive with -gpu and -slurm'),
   click.option('-gpu', type=bool, required=False, default=True, show_default=True,
@@ -22,23 +38,12 @@ train_resume_options = [
                 help='Use SLURM; precedes -gpu and -cpu'),
   click.option('-n-gpus', type=int, required=False, default=2, show_default=True,
                 help='Number of GPUs to use for training. Ignored for -cpu'),
-  click.option('-log', type=bool, required=False, default=True, show_default=True,
-                help='Is logging required?'),
-  click.option('-ckpt-freq', type=int, required=False, default=0, show_default=True,
-                help='How frequently to save checkpoints. Pass 0 to not save any'),
-  click.option('-runs', type=str, required=False, default='runs', show_default=True,
-                help='Runs folder'),
+
   click.option('-ckpt-dir', type=str, required=False, default='./models', show_default=True,
                 help='Directory to store checkpoints in. Used only if -ckpt-freq is not zero'),
-  click.option('-e', '--epochs', type=int, required=False, default=50, show_default=True,
-                help='The number of epochs to train'),
-  click.option('-b', '--batch-size', type=int, required=False, default=64, show_default=True,
-                help='Training batch size'),
+
   click.option('-s', '--seed', type=int, required=False, default=1640, show_default=True,
                 help='Seed to use before training'),
-  click.option('-val', '--validate', type=click.IntRange(0, 100), required=False,
-                default=0, show_default=True,
-                help='Percentage of the dataset to set aside for validation at each epoch; 0 implies no validation needed'),
   click.option('-pr', '--protocol', type=str, required=False, show_default=True,
                 default='tcp', help='Used for distributed training'),
   click.option('-host', '--hostname', type=str, required=False, show_default=True,
@@ -60,14 +65,15 @@ class CommandType(Enum):
 
 
 def wrapper(flag: CommandType, **kwargs):
-  if kwargs['ckpt_freq'] != 0:
+  if kwargs.get('ckpt_freq', 0) != 0:
     if not os.path.isdir(kwargs['ckpt_dir']):
       os.mkdir(kwargs['ckpt_dir'], mode=0o775)
 
   model = Net()
 
-  r = kwargs["runs"]
-  log_dir = f'{r}/{datetime.now().strftime("%I:%M:%S%p_%a_%d_%b_%Y")}'
+  if flag == CommandType.Train or flag == CommandType.Resume:
+    r = kwargs["runs"]
+    log_dir = f'{r}/{datetime.now().strftime("%I:%M:%S%p_%a_%d_%b_%Y")}'
 
   transformations = T.Compose([
     T.ToTensor(),
@@ -96,7 +102,7 @@ def wrapper(flag: CommandType, **kwargs):
     # 'optimiser_step': StepLR(optimiser, step_size=1, gamma=0.7),
     'dataset': train_set,
     'trainer': CustomTrainer(),
-    'validate': bool(kwargs['validate']),
+    'validate': bool(kwargs.get('validate', False)),
     'validation_dataset': val_set,
     'nprocs': kwargs['n_gpus']
   }
@@ -138,17 +144,19 @@ def wrapper(flag: CommandType, **kwargs):
 
 @click.command(help='Start training a model afresh')
 @add_click_options(train_resume_options)
+@add_click_options(base_options)
 def train(**kwargs):
   wrapper(CommandType.Train, **kwargs)
 
 @click.command(help='Resume training from a given model')
 @add_click_options(train_resume_options)
+@add_click_options(base_options)
 @add_click_options(model_option)
 def resume(**kwargs):
   wrapper(CommandType.Resume, **kwargs)
 
 @click.command(help='Evaluate an already trained model')
-@add_click_options(train_resume_options)
+@add_click_options(base_options)
 @add_click_options(model_option)
 def evaluate(**kwargs):
   wrapper(CommandType.Evaluate, **kwargs)

@@ -105,7 +105,7 @@ class DDPWrapper(object):
              logdir: str=None):
     file_path = os.path.join(ckpt_dir, f'ckpt_{ckpt}.pt')
     assert os.path.isfile(file_path)
-    checkpoint = torch.load(file_path)
+    checkpoint = torch.load(file_path, map_location=torch.device('cpu'))
     self.start_at = checkpoint['epoch']
     self.model.load_state_dict(checkpoint['model'])
     self.optimiser.load_state_dict(checkpoint['optimiser'])
