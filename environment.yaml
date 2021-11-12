@@ -9,4 +9,4 @@ dependencies:
   - pytorch=1.10
   - numpy=1.21
   - tensorboard=1.15
-prefix: /home/sujal/.conda/envs/ddpw
+prefix: ~/.conda/envs/ddpw
