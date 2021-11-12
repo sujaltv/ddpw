@@ -1,12 +1,12 @@
-name: ddpw
+name: ddpw-docs
 channels:
-  - conda-forge
-  - pytorch
   - defaults
 dependencies:
   - python=3.8
   - submitit=1.2
-  - pytorch=1.10
   - numpy=1.21
+  - pytorch=1.10
   - tensorboard=1.15
-prefix: /home/sujal/.conda/envs/ddpw
+  - sphinx-copybutton
+prefix: /home/sujal/.conda/envs/ddpw-docs
+
