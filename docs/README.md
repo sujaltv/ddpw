@@ -1,18 +1,38 @@
-# Notes
+# DDPW Documentation
 
-[![Publish to Surge](https://github.com/sujaltv/phd/actions/workflows/surge_sh.yml/badge.svg)](https://github.com/sujaltv/phd/actions/workflows/surge_sh.yml)
-
-Bootstrap to get set up with documentation using
+This is the source for the [DDPW
+Documentation](http://ddpw.projects-tvs.surge.sh) written in Python 3.8 with
 [Sphinx](https://www.sphinx-doc.org/en/master/).
 
-## Setup
+## Set up
 
 ```bash
+# with conda
+conda env create --file environment.yaml
+conda activate ddpw-docs
+
+# with pip
 pip install -r requirements.txt
 ```
 
-## Build documentation
+**Freeze environment**
 
 ```bash
-make html
+sh freeze.sh
+
+# alternatively
+conda export env > environment.yaml
+pip list --format=freeze > requirements.txt
+```
+
+**Update environent**
+
+```bash
+conda env update --file environment.yaml
+```
+
+## Publish manually
+
+```bash
+sh publish.sh
 ```

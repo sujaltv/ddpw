@@ -1,7 +1,9 @@
 __pycache__
 .DS_Store
 .vscode
+**.egg-info
 
+build
 data
 runs
 models

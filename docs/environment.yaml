@@ -1,3 +1,17 @@
+<<<<<<< HEAD
+name: ddpw-docs
+channels:
+  - defaults
+dependencies:
+  - python=3.8
+  - submitit=1.2
+  - numpy=1.21
+  - pytorch=1.10
+  - tensorboard=1.15
+  - sphinx-copybutton
+prefix: /home/sujal/.conda/envs/ddpw-docs
+
+=======
 name: ddp-notes
 channels:
   - defaults
@@ -81,3 +95,4 @@ dependencies:
     - watchdog==2.1.3
     - webcolors==1.11.1
     - zipp==3.4.1
+>>>>>>> 5104c54db9a0a9be668faf26e98a0179081d68a2
