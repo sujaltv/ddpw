@@ -24,8 +24,10 @@ setup(
   packages=find_packages(),
   classifiers=[
       "Programming Language :: Python :: 3",
-      "License :: MIT License",
-      "Operating System :: Mac :: Linux :: Windows",
+      "License :: OSI Approved :: MIT License",
+      "Operating System :: MacOS",
+      "Operating System :: Microsoft :: Windows",
+      "Operating System :: POSIX :: Linux"
   ],
   python_requires='>=3.8',
   install_requires=install_requires
