@@ -4,16 +4,17 @@ Examples
 Context
 ^^^^^^^^
 
+Consider the following snippet for a quick understanding of the examples.
+
 .. code-block:: python
-    :linenos:
 
     from torch.optim import Adadelta
 
     from .src import CustomNet, CustomDataset, CustomLoss, CustomTrainer
 
-    model = CustomNet()
-    optimiser = torch.optim.Adadelta(model.parameters(), lr=.1)
-    dataset = Dataset(root='data', download=True, train=True)
+    model = CustomNet() # the model to be trained
+    optimiser = torch.optim.Adadelta(model.parameters(), lr=.1) # an optimiser
+    dataset = Dataset(root='data', download=True, train=True) # the dataset
 
     options = {
       'model': model,
@@ -31,7 +32,6 @@ Training on a single CPU
 ------------------------
 
 .. code-block:: python
-    :linenos:
 
     from ddpw import DDPWrapper, Platform
 
@@ -43,7 +43,6 @@ Training on a GPU
 -----------------
 
 .. code-block:: python
-    :linenos:
 
     from ddpw import DDPWrapper, Platform
 
@@ -54,7 +53,6 @@ Training on mutiple cluster-less GPUs
 -------------------------------------
 
 .. code-block:: python
-    :linenos:
 
     from ddpw import DDPWrapper, Platform
 
@@ -70,16 +68,35 @@ Training on SLURM-based GPU clusters
 ------------------------------------
 
 .. code-block:: python
-    :linenos:
 
     from ddpw import DDPWrapper, Platform
 
     job = DDPWrapper(platform=Platform.SLURM, **options)
     job.start(...)
 
-Slurm based environment variables are used to determin the number of clusters,
+Slurm-based environment variables are used to determine the number of clusters,
 nodes, cluster partitions, *etc*. They may be passed as environment variables
-through either the CLI or from a script.
+through either the CLI or from a script. The following in an example of a shell
+script.
+
+.. code-block:: bash
+    :caption: An example ``slurm.sh`` file run as ``sbatch slurm.sh``
+
+    #!/bin/sh
+
+    #SBATCH --output=ddp.out
+    #SBATCH --error=ddp.err
+    #SBATCH --nodes=2
+    #SBATCH --gpus-per-node=4
+    #SBATCH --mem=20GB
+    #SBATCH --ntasks-per-node=4
+    #SBATCH --partition=Extended
+    #SBATCH --time=1-4
+
+    source activate ddp
+    python main.py train
+    conda deactivate
+
 
 Resuming
 ^^^^^^^^
@@ -91,7 +108,6 @@ This allows for a model trained on a CPU or a GPU to be continued to be trained
 multiple GPUs or SLUM clusters or vice versa.
 
 .. code-block:: python
-    :linenos:
 
     from ddpw import DDPWrapper, Platform
 
@@ -104,11 +120,10 @@ multiple GPUs or SLUM clusters or vice versa.
 Evaluation
 ^^^^^^^^^^
 
-Custom evaluation metrics may be defined. The following example shows evaluation
-of a saved model.
+Custom :class:`evaulation metrics <ddpw.EvalMetrics>` may be defined. The
+following example shows evaluation of a saved model.
 
 .. code-block:: python
-    :linenos:
 
     from ddpw import DDPWrapper, Platform
 

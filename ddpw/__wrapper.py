@@ -15,13 +15,13 @@ class DDPWrapper(object):
   r"""The :class:`DDPWrapper` class provides the highest level encapsulation for
   training models on different platforms.
 
-  :param Platform platform: The platform to train on: whether to train on a
-      CPU, a GPU, or on clusted nodes
-  :param torch.nn.Module model: The model architecture to be trained
+  :param Platform platform: The platform to train on: whether to train on a CPU,
+      a GPU, or on clusted nodes
+  :param torch.nn.Module model: The model to be trained
   :param torch.utils.data.Dataset dataset: The dataset to use for training
   :param Loss loss_fn: The loss function to be used
   :param torch.optim.Optimizer optimiser: The optimiser
-  :param Trainer trainer: An instance of :class:`Trainer` with definitions of
+  :param Trainer trainer: An instance of the custom trainer with definitions of
       how to train and evaluate the model
   :param LRScheduler,optional optimiser_step: Optimiser step. Defaults to
       None.
@@ -32,26 +32,26 @@ class DDPWrapper(object):
       is sought, the dataset to validare the training on. Defaults to None.
   """
 
-  r"""Whether the model had batch normalisation layers in it"""
   model_has_batchnorm: bool = False
+  r"""Whether the model has batch normalisation layers in it"""
 
-  r"""The platform to train on"""
   platform: Platform = Platform.GPU
+  r"""The platform to train on"""
 
-  r"""The number of processes/GPUs"""
   nprocs: int = 1
+  r"""The number of processes/GPUs"""
 
-  r"""The total number of GPUs across nodes to be used; used while on SLURM"""
   world_size: int = 1
+  r"""The total number of GPUs across nodes to be used; used while on SLURM"""
 
-  r"""The prot at which interprocess communication happens"""
   port: int = 1640
+  r"""The port at which interprocess communication happens"""
 
-  r"""Seed to generare random values across GPUs"""
   seed: int = 1640
+  r"""Seed to generare random values across GPUs"""
 
-  r"""Starting epoch number"""
   start_at: int = 0
+  r"""Starting epoch number"""
 
   def __init__(self, platform: Platform, model: torch.nn.Module,
                dataset: torch.utils.data.Dataset, loss_fn: Loss,
@@ -153,7 +153,7 @@ class DDPWrapper(object):
 
     :param int epochs: The number of epochs until which to train
     :param int ckpt_every: Number of epoch interval to save a model checkpoint
-    :param str ckpt_dir: The location in which the model is saved
+    :param str ckpt_dir: The location at which the model is saved
     :param int ckpt: The checkpoint number
     :param int batch_size: Training batch size.
     :param str log_dir: Log directory
@@ -173,13 +173,14 @@ class DDPWrapper(object):
     r"""Start or resume training
 
     :param int epochs: The number of epochs until which to train
-    :param int ckpt_every: Number of epoch interval to save a model checkpoint
-    :param str ckpt_dir: The location in which the model is saved
-    :param int batch_size: Training batch size.
+    :param int ckpt_every: The number of epoch interval to save a model
+      checkpoint
+    :param str ckpt_dir: The location at which the model is saved
+    :param int batch_size: Training batch size
     :param str log_dir: Log directory
 
-    :raises TypeError: If unimplemented platform is specified, raise an
-      exception
+    :raises TypeError: If an unimplemented platform is specified, TypeError is
+      raised
     """
 
     self.ckpt_dir = ckpt_dir
