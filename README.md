@@ -7,33 +7,26 @@
 The Distributed Data Parallel wrapper (DDPW) is created as a utility package to
 encapsulate the scaffolding for PyTorch's Distributed Data Parallel.
 
-This code is written in Python 3.8. The [DDP
+This code is written in Python 3.8. The [DDPW
 documentation](http://ddpw.projects-tvs.surge.sh) contains details on how to use
 this package.
 
-## Set up
+## Overview
+
+### Installation
 
 ```bash
-# with conda
-conda env create --file environment.yaml
-conda activate ddpw
-
-# with pip
-pip install -r requirements.txt
+conda install -c tvsujal ddpw # with conda
+pip install ddpw # with pip from PyPI
 ```
 
-**Freeze environment**
+### Usage
 
-```bash
-sh freeze.sh
+```python
+from ddpw import DDPWrapper, Platform
 
-# alternatively
-conda env export --no-build --from-history > environment.yaml
-pip list --format=freeze > requirements.txt
-```
-
-**Update environent**
-
-```bash
-conda env update --file environment.yaml
+job = DDPWrapper(platform=Platform.GPU, nprocs=4, ...) # train on 4 GPUs
+job.start(epoch=30) # start training
+job.resume(ckpt=20, epochs=60) # resume training from 20th epoch
+e = job.evaluate(ckpt=50) # evaluate the model saved at 50th epoch
 ```

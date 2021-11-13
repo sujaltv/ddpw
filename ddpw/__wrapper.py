@@ -11,6 +11,7 @@ from .__trainer import Trainer, EvalMetrics
 from .__logger import Logger, LoggerType
 from .__parallelit import AutoExecutor
 
+
 class DDPWrapper(object):
   r"""The :class:`DDPWrapper` class provides the highest level encapsulation for
   training models on different platforms.
@@ -66,7 +67,7 @@ class DDPWrapper(object):
     self.dataset = dataset
     self.loss_fn = loss_fn
     self.optimiser = optimiser
-    self.trainer = trainer
+    self.trainer: Trainer = trainer
     self.optimiser_step = optimiser_step
     self.validate = validate
     self.validation_dataset = validation_dataset
