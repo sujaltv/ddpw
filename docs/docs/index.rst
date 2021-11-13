@@ -23,12 +23,10 @@ Features
 2. **Logging**. This wrapper includes APIs for logging with Tensorboard
 3. **Flexible training and evaluation**. This wrapper allows easy training, pausing, resuming, and evaluation. This means that one could train a model for :math:`50` epochs, and later on resume the training from the :math:`50^\textrm{th}` epoch
 
-Index
-=====
-
 .. toctree::
    :caption: Introduction
    :glob:
+   :hidden:
    :titlesonly:
 
    quickstart/installation
@@ -37,6 +35,7 @@ Index
 .. toctree::
    :caption: API
    :glob:
+   :hidden:
    :titlesonly:
 
    api/ddpwrapper
@@ -47,6 +46,7 @@ Index
 .. toctree::
    :caption: Contribution
    :glob:
+   :hidden:
    :titlesonly:
 
    contribution/setup
@@ -55,6 +55,7 @@ Index
 .. toctree::
    :caption: Bureau
    :glob:
+   :hidden:
    :titlesonly:
 
    LICENCE
