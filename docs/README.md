@@ -7,11 +7,8 @@ Documentation](http://ddpw.projects-tvs.surge.sh) written in Python 3.8 with
 ## Set up
 
 ```bash
-# with conda
 conda env create --file environment.yaml
 conda activate ddpw-docs
-
-# with pip
 pip install -r requirements.txt
 ```
 
@@ -29,6 +26,7 @@ pip list --format=freeze > requirements.txt
 
 ```bash
 conda env update --file environment.yaml
+pip install -r requirements.txt
 ```
 
 ## Publish manually
