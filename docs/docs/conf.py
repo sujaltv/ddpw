@@ -8,6 +8,20 @@ author = 'TVS'
 templates_path = ['_templates']
 exclude_patterns = ['build', 'Thumbs.db', '.DS_Store']
 
+extensions = [
+  "sphinx.ext.intersphinx",
+  "sphinx.ext.autodoc",
+  "sphinx.ext.doctest",
+  "sphinx.ext.extlinks",
+  'sphinx.ext.autosummary',
+  'fluiddoc.mathmacro',
+  "sphinx.ext.todo",
+  "sphinx.ext.mathjax",
+  "sphinx.ext.viewcode",
+  'sphinx_copybutton',
+  "sphinxcontrib.bibtex",
+]
+
 html_theme = 'furo'
 html_show_sourcelink = False
 html_show_copyright = False
@@ -21,19 +35,10 @@ html_context = {
   "github_version": "master"
 }
 
-extensions = [
-  "sphinx.ext.autodoc",
-  "sphinx.ext.doctest",
-  "sphinx.ext.intersphinx",
-  "sphinx.ext.extlinks",
-  'sphinx.ext.autosummary',
-  'fluiddoc.mathmacro',
-  "sphinx.ext.todo",
-  "sphinx.ext.mathjax",
-  "sphinx.ext.viewcode",
-  'sphinx_copybutton',
-  "sphinxcontrib.bibtex"
-]
+pygments_style = "friendly"
+pygments_dark_style = "material"
+
+add_module_names = False # autocode to show only the final name
 
 bibtex_bibfiles = ['references.bib']
 bibtex_default_style = 'plain'

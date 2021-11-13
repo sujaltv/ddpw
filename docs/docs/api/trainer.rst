@@ -1,8 +1,10 @@
 Trainer
 #######
 
-:class:`Trainer` the the class accepted by :class:`DDPWrapper`
+:class:`~ddpw.Trainer` is required by :class:`~ddpw.DDPWrapper`.
 
 .. autoclass:: ddpw.Trainer
   :members:
-  :noindex:
+
+.. autoclass:: ddpw.EvalMetrics
+  :members:

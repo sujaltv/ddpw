@@ -1,20 +1,6 @@
 import torch
 
 
-def add_click_options(options):
-  """This function allows concatenating multiple commands for the click package
-
-  Args:
-      options (list): A list of click options/commands
-  """
-
-  def _add_click_options(func):
-    for option in reversed(options):
-      func = option(func)
-    return func
-  return _add_click_options
-
-
 def optimizer_to(optim, device):
   r"""
   This function offers a simple way to move all parameters of an optimiser or,
