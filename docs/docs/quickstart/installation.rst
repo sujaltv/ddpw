@@ -33,10 +33,8 @@ Building from the source
   > git clone https://github.com/sujaltv/ddpw
   > cd ddpw
 
-  # as a pip package
-  > pip install .
-
-  # as a conda package
-  > cd conda
+  > cd conda # as a conda package
   > conda-build . # generates a distribution
   > conda install <distribution_path>
+
+  > pip install . # as a pip package

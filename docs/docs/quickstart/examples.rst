@@ -12,16 +12,14 @@ Consider the following snippet for a quick understanding of the examples.
 
     from .src import CustomNet, CustomDataset, CustomLoss, CustomTrainer
 
-    model = CustomNet() # the model to be trained
-    optimiser = torch.optim.Adadelta(model.parameters(), lr=.1) # an optimiser
-    dataset = Dataset(root='data', download=True, train=True) # the dataset
+    model = CustomNet() # the model
 
     options = {
       'model': model,
-      'loss_fn': CustomLoss(),
-      'optimiser': optimiser,
-      'dataset': dataset,
-      'trainer': CustomTrainer(),
+      'loss_fn': CustomLoss(), # the loss function
+      'optimiser': Adadelta(model.parameters(), lr=.1) # the optimiser,
+      'dataset': CustomDataset(root='./data', train=True) # the dataset,
+      'trainer': CustomTrainer(), # training and evaluation
       'nprocs': 1 # number of processes/CPUs/GPUs
     }
 
@@ -36,8 +34,7 @@ Training on a single CPU
     from ddpw import DDPWrapper, Platform
 
     job = DDPWrapper(platform=Platform.CPU, **options)
-    job.start(epochs=50, ckpt_every=20, ckpt_dir='./models', batch_size=64,
-      logdir='runs')
+    job.start(epochs=50, ckpt_every=20, ckpt_dir='./models', batch_size=64)
 
 Training on a GPU
 -----------------
@@ -76,7 +73,7 @@ Training on SLURM-based GPU clusters
 
 Slurm-based environment variables are used to determine the number of clusters,
 nodes, cluster partitions, *etc*. They may be passed as environment variables
-through either the CLI or from a script. The following in an example of a shell
+through either the CLI or from a script. The following is an example of a shell
 script.
 
 .. code-block:: bash

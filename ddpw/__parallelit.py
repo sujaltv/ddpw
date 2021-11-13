@@ -10,21 +10,19 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data.distributed import DistributedSampler
 
 from .__logger import Logger
-from .__trainer import Trainer
 
 
 class AutoExecutor(object):
-  r''' The number of processes (or GPUs) '''
+  #: The number of processes (or GPUs)
   nprocs = 1
 
-  r''' Inter-process connexion address '''
+  #: Inter-process connexion address
   init_method: str = 'tcp://localhost:1640'
 
-  r''' Seed for generating random numbers across processes '''
+  #: Seed for generating random numbers across processes
   seed = 1640
 
-  def update_parameters(self, trainer: Trainer, init_method=None,
-                        nprocs: int = 1):
+  def update_parameters(self, trainer, init_method=None, nprocs: int = 1):
     assert nprocs > 0
     self.nprocs = nprocs
     if init_method is not None: self.init_method = init_method
