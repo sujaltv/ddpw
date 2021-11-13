@@ -6,8 +6,6 @@ training progress.
 
 .. autoclass:: ddpw.Logger
   :members:
-  :noindex:
 
 .. autoclass:: ddpw.LoggerType
   :members:
-  :noindex:

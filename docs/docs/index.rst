@@ -14,12 +14,12 @@ Features
 1. **Multiple platforms**. This wrapper allows models to be trained on:
 
    a. a single CPU,
-   b. a cluster-less GPU,
+   b. a single GPU,
    c. multiple cluster-less GPUs, and
-   d. SLURM-based multi-node (clustered) multiple GPUs (by using `Submitit <https://github.com/facebookincubator/submitit>`_)
+   d. SLURM-based multi-node (clustered) single/multiple GPUs (by using `Submitit <https://github.com/facebookincubator/submitit>`_)
 
-2. **Logging**. This wrapper includes APIs for logging with Tensorboard.
-3. **Flexible training and evaluation**. This wrapper allows easy training, pausing, resuming, and evaluation training. This means that one could train a model for :math:`50` epochs, and later on resume the training from the :math:`50^\textrm{th}` epoch up to, say, :math:`100^\textrm{th}` epoch.
+2. **Logging**. This wrapper includes APIs for logging with Tensorboard
+3. **Flexible training and evaluation**. This wrapper allows easy training, pausing, resuming, and evaluation. This means that one could train a model for :math:`50` epochs, and later on resume the training from the :math:`50^\textrm{th}` epoch
 
 Index
 =====

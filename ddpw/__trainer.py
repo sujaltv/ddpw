@@ -24,7 +24,8 @@ class EvalMetrics(object):
 
 
 class Trainer(ABC):
-  r"""An abstract class with definitions of training and evaluating a model"""
+  r"""An abstract class requiring definitions of training and evaluating a
+  model"""
 
   @abstractclassmethod
   def train(
@@ -35,7 +36,7 @@ class Trainer(ABC):
     optimiser: torch.optim.Optimizer,
     optim_step: LRScheduler = None
   ):
-    r"""The train method defines the training procedure.
+    r"""The train method defines the training procedure
 
     :param torch.nn.Module model: The model to be trained
     :param torch.utils.data.DataLoader dataloader: The dataload with training
@@ -51,7 +52,7 @@ class Trainer(ABC):
   def evaluate(self, model: torch.nn.Module,
                dataloader: torch.utils.data.DataLoader) -> EvalMetrics:
     r"""Evaluation method to evaluate a trained (or under-training) model
-    with the evaluation dataset in the dataloader
+    with the evaluation dataset in ``dataloader``
 
     :param torch.nn.Module) model: The model to be evaluated
     :param torch.utils.data.DataLoader dataloader: The dataset to use for
