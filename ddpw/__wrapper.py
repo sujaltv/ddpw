@@ -13,6 +13,7 @@ from .__parallelit import AutoExecutor
 from .utils import click
 
 
+
 class DDPWrapper(object):
   r"""The :class:`DDPWrapper` class provides the highest level encapsulation for
   training models on different platforms.
