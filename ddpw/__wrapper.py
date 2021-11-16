@@ -89,6 +89,8 @@ class DDPWrapper(object):
     validation_loss = torch.Tensor([0])
 
     for e in range(self.start_at, epochs):
+      click.dark_cyan().text(f'Device {pid}: epoch {e} of {epochs}\n').write()
+
       train_evaluation = EvalMetrics()
       validation_evaluation = EvalMetrics()
 
@@ -191,7 +193,7 @@ class DDPWrapper(object):
     :param int ckpt_every: Number of epoch interval to save a model checkpoint
     :param str ckpt_dir: The location at which the model is saved
     :param int ckpt: The checkpoint number
-    :param int batch_size: Training batch size.
+    :param int batch_size: Batch size.
     :param str log_dir: Log directory
 
     :return: :class:`EvalMetrics` An instance of the evaluation metric
@@ -216,7 +218,7 @@ class DDPWrapper(object):
     :param int ckpt_every: The number of epoch interval to save a model
       checkpoint
     :param str ckpt_dir: The location at which the model is saved
-    :param int batch_size: Training batch size
+    :param int batch_size: Batch size
     :param str log_dir: Log directory
 
     :raises TypeError: If an unimplemented platform is specified, TypeError is
@@ -225,12 +227,13 @@ class DDPWrapper(object):
 
     click.bold().blue().underline().text('Training\n').write()
     click.blue().text('Platform: ').text(f'{self.platform.name}\n').write()
-    click.blue().text('No. of processes: ').text(f'{self.nprocs}\n').write()
+    if self.platform != Platform.CPU:
+      click.blue().text('No. of processes: ').text(f'{self.nprocs}\n').write()
     click.blue().text('Epochs: ').text(f'{epochs}\n').write()
     if ckpt_every > 0:
       click.blue().text('Model saved at every ')\
         .text(f'{ckpt_every} epoch\n').write()
-    click.blue().text('Training batch size: ').text(f'{batch_size}\n').write()
+    click.blue().text('Batch size: ').text(f'{batch_size}\n').write()
     click.blue().text('Size of the training dataset: ')\
       .text(f'{len(self.dataset)}\n').write()
     if self.validate:
@@ -292,6 +295,6 @@ class DDPWrapper(object):
         parallel_exec.start_ddp(pid, options)
 
       job = executor.submit(wrapper)
-      print(f'Slurm job ID: {job.job_id}')
+      click.bold().text(f'Slurm job ID: {job.job_id}\n').write()
     else:
       raise TypeError("Invalid platform or no implementation")

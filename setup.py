@@ -17,8 +17,7 @@ setup(
   version=version,
   author="Sujal T.V.",
   url="http://ddpw.projects-tvs.surge.sh",
-  description=r"""A utility package to encapsulate the scaffolding for PyTorch's
-  Distributed Data Parallel""",
+  description=r"""A utility package to scaffold PyTorch's DDP""",
   long_description=long_description,
   long_description_content_type="text/markdown",
   packages=find_packages(),

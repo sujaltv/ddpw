@@ -39,6 +39,7 @@ class AutoExecutor(object):
 
   def dist_init(self, pid, args):
     click.yellow().text('Initialising on: ').text(f'Device {pid}\n').write()
+    click.dark_cyan().text(f'Communication via {self.init_method}\n').write()
 
     dist.init_process_group(
       backend=dist.Backend.GLOO,
@@ -84,7 +85,7 @@ class AutoExecutor(object):
     logger = Logger(args['logdir']) if pid == 0 else None
 
     click.bold().underline().yellow()\
-      .text('Information on: ').text(f'Device {pid}:\n')
+      .text('Information on:').text(' ').text(f'Device {pid}:\n')
     click.yellow().text('No. of training batches on this device: ')\
       .text(f'{len(dataloader)}\n')
 
@@ -96,7 +97,7 @@ class AutoExecutor(object):
     self.trainer(model, dataloader, optimiser, loss_fn, optimiser_step, epochs,
                  ckpt_every, pid=pid, logger=logger, validate=validate,
                  validation_dataset=validation_dataloader)
-    click.green().text(f'Training finished on device {pid}:\n').write()
+    click.green().text(f'Training finished on device {pid}.\n').write()
 
     dist.barrier()
     dist.destroy_process_group()
