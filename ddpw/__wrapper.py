@@ -10,6 +10,8 @@ from .__platform import Platform
 from .__trainer import Trainer, EvalMetrics
 from .__logger import Logger, LoggerType
 from .__parallelit import AutoExecutor
+from .utils import click
+
 
 
 class DDPWrapper(object):
@@ -25,12 +27,12 @@ class DDPWrapper(object):
   :param Trainer trainer: An instance of the custom trainer with definitions of
       how to train and evaluate the model
   :param LRScheduler,optional optimiser_step: Optimiser step. Defaults to
-      None.
+      None
   :param int,optional nprocs: Number of process to train on. Defaults to 1.
   :param bool,optional validate: Whether to validate training. Defaults to
-      False.
+      False
   :param torch.utils.data.Dataset,optional validation_dataset: If validation
-      is sought, the dataset to validare the training on. Defaults to None.
+      is sought, the dataset to validate the training on. Defaults to None
   """
 
   model_has_batchnorm: bool = False
@@ -84,35 +86,68 @@ class DDPWrapper(object):
     """
 
     # start training
-    validation_accuracy = None
+    validation_loss = torch.Tensor([0])
 
     for e in range(self.start_at, epochs):
-      loss = self.trainer.train(model, dataset, loss_fn, optimiser,
+      train_evaluation = EvalMetrics()
+      validation_evaluation = EvalMetrics()
+
+      train_loss = self.trainer.train(model, dataset, loss_fn, optimiser,
                                 optimiser_step)
+      train_evaluation = self.trainer.evaluate(model, dataset)
 
       if validate and logger is not None:
         assert validation_dataset is not None
-        validation_accuracy = self.trainer.evaluate(model, validation_dataset)
+        validation_loss = self.trainer.loss(model, validation_dataset, loss_fn)
+        validation_evaluation = self.trainer.evaluate(model, validation_dataset)
 
       # barrier and reduce all
       def common_logger():
-        logger.log(LoggerType.Scalar, {'Loss': loss}, e)
-        if validation_accuracy is not None:
-          logger.log(LoggerType.Scalar, {
-            'ValAccuracy': validation_accuracy.accuracy
-          }, e)
+
+        losses = {
+          'Loss': {
+            'Train': train_loss
+          }
+        }
+
+        evaluations = {
+          'Accuracy': {
+            'Train': train_evaluation.accuracy
+          }
+        }
+
+        if validate:
+          losses['Loss']['Validation'] = validation_loss
+          evaluations['Accuracy']['Validation'] = \
+            validation_evaluation.accuracy
+
+        logger.log(LoggerType.Scalars, losses, e)
+        logger.log(LoggerType.Scalars, evaluations, e)
 
       if logger is not None or True:
         if self.platform != Platform.CPU:
+
           dist.barrier()
-          loss_reduced = loss.detach().clone()
-          dist.reduce(loss_reduced, dst=0)
-          loss_reduced = loss_reduced / self.nprocs
-          if pid == 0: common_logger()
+
+          dist.reduce(train_loss.detach().clone(), dst=0)
+          train_evaluation.reduce(dst=0)
+
+          if validate:
+            dist.reduce(validation_loss.detach().clone(), dst=0)
+            validation_evaluation.reduce(dst=0)
+
+          if pid == 0:
+            train_loss = train_loss / self.nprocs
+
+            if validate:
+              validation_loss = validation_loss / self.nprocs
+
+            common_logger()
+
         else: common_logger()
 
       if ckpt_every > 0:
-        if (e > 0 and e % ckpt_every == 0) or (e == epochs - 1):
+        if (e > 0 and e % ckpt_every == 0) or ((e+1) == epochs):
           if ((self.platform == Platform.GPU or \
             self.platform == Platform.SLURM) and pid == 0) or \
             self.platform == Platform.CPU:
@@ -166,6 +201,10 @@ class DDPWrapper(object):
     assert os.path.isfile(file_path)
     checkpoint = torch.load(file_path, map_location=torch.device('cpu'))
     self.start_at = checkpoint['epoch']
+
+    click.bold().blue().underline().text('Resuming training\n').write()
+    click.blue().text('Resuming at epoch ').text(f'{self.start_at}\n').write()
+
     self.model.load_state_dict(checkpoint['model'])
     self.optimiser.load_state_dict(checkpoint['optimiser'])
     self.start(epochs, ckpt_every, ckpt_dir, batch_size, logdir)
@@ -183,6 +222,22 @@ class DDPWrapper(object):
     :raises TypeError: If an unimplemented platform is specified, TypeError is
       raised
     """
+
+    click.bold().blue().underline().text('Training\n').write()
+    click.blue().text('Platform: ').text(f'{self.platform.name}\n').write()
+    click.blue().text('No. of processes: ').text(f'{self.nprocs}\n').write()
+    click.blue().text('Epochs: ').text(f'{epochs}\n').write()
+    if ckpt_every > 0:
+      click.blue().text('Model saved at every ')\
+        .text(f'{ckpt_every} epoch\n').write()
+    click.blue().text('Training batch size: ').text(f'{batch_size}\n').write()
+    click.blue().text('Size of the training dataset: ')\
+      .text(f'{len(self.dataset)}\n').write()
+    if self.validate:
+      click.blue()\
+        .text('Size of the validation dataset: ')\
+        .text(f'{len(self.validation_dataset)}\n').write()
+
 
     self.ckpt_dir = ckpt_dir
     options = {
@@ -237,6 +292,6 @@ class DDPWrapper(object):
         parallel_exec.start_ddp(pid, options)
 
       job = executor.submit(wrapper)
-      print('Job ID: ', job.job_id)
+      print(f'Slurm job ID: {job.job_id}')
     else:
       raise TypeError("Invalid platform or no implementation")
