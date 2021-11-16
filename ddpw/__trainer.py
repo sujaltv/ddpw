@@ -1,6 +1,7 @@
 from abc import abstractclassmethod, ABC
 
 import torch
+import torch.distributed as dist
 from torch.nn.modules.loss import _Loss as Loss
 from torch.optim.lr_scheduler import _LRScheduler as LRScheduler
 
@@ -8,19 +9,30 @@ from torch.optim.lr_scheduler import _LRScheduler as LRScheduler
 class EvalMetrics(object):
   r"""A template class for defining and computing accuracy metrics"""
 
-  total_samples: int = 0
-  no_of_correct: int = 0
+  total_samples: torch.Tensor
+  no_of_correct: torch.Tensor
+
+  #: The number of processes to average over
+  nprocs: int = 1
+
+  def __init__(self):
+    self.total_samples = torch.Tensor([0])
+    self.no_of_correct = torch.Tensor([0])
 
   @property
   def accuracy(self):
-    return (self.no_of_correct * 100) /(self.total_samples or 1)
+    return (self.no_of_correct * 100) / (self.total_samples or 1) / self.nprocs
 
   def print(self):
     r"""A method to print accuracy metrics"""
 
-    print(f'Total samples: {self.total_samples}')
-    print(f'Number of correct predictions: {self.no_of_correct}')
-    print('Accuracy: {:.2f}'.format(self.accuracy))
+    print(f'Total samples: {self.total_samples.item()}')
+    print(f'Number of correct predictions: {self.no_of_correct.item()}')
+    print('Accuracy: {:.2f}'.format(self.accuracy.item()))
+
+  def reduce(self, dst):
+    dist.reduce(self.total_samples.detach().clone(), dst=dst)
+    dist.reduce(self.no_of_correct.detach().clone(), dst=dst)
 
 
 class Trainer(ABC):
@@ -44,6 +56,23 @@ class Trainer(ABC):
     :param Loss loss_fn: The loss function
     :param torch.optim.Optimizer optimiser: The optimiser
     :param LRScheduler,optional optim_step: Optimiser steps. Defaults to None.
+    """
+
+    pass
+
+  @abstractclassmethod
+  def loss(
+    self,
+    model: torch.nn.Module,
+    dataloader: torch.utils.data.DataLoader,
+    loss_fn: Loss
+  ) -> torch.Tensor:
+    r"""The loss method returns the model's loss without backpropagating
+
+    :param torch.nn.Module model: The model to be trained
+    :param torch.utils.data.DataLoader dataloader: The dataload with training
+      data
+    :param Loss loss_fn: The loss function
     """
 
     pass

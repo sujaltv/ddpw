@@ -10,6 +10,7 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data.distributed import DistributedSampler
 
 from .__logger import Logger
+from .utils import click
 
 
 class AutoExecutor(object):
@@ -37,6 +38,8 @@ class AutoExecutor(object):
     p.join()
 
   def dist_init(self, pid, args):
+    click.yellow().text('Initialising on: ').text(f'Device {pid}\n').write()
+
     dist.init_process_group(
       backend=dist.Backend.GLOO,
       init_method=self.init_method,
@@ -67,32 +70,44 @@ class AutoExecutor(object):
     model.to(gpu)
     model = DistributedDataParallel(model, [pid])
     smplr = DistributedSampler(dataset, num_replicas=self.nprocs, rank=pid)
-    dataloader = DataLoader(dataset, batch_size=100, pin_memory=True,
-                         sampler=smplr)
+    dataloader = DataLoader(dataset, batch_size=args['batch_size'],
+                            pin_memory=True, sampler=smplr)
     validation_dataloader = None
     if validate:
       smplr2 = DistributedSampler(validation_dataset, num_replicas=self.nprocs,
                                   rank=pid)
       validation_dataloader = DataLoader(validation_dataset,
-                                         batch_size=len(validation_dataset),
+                                         batch_size=args['batch_size'],
                                          pin_memory=True, sampler=smplr2)
 
     optimiser.params = model.parameters()
     logger = Logger(args['logdir']) if pid == 0 else None
+
+    click.bold().underline().yellow()\
+      .text('Information on: ').text(f'Device {pid}:\n')
+    click.yellow().text('No. of training batches on this device: ')\
+      .text(f'{len(dataloader)}\n')
+
+    if validate:
+      click.yellow().text('No. of validation batches on this device: ')\
+        .text(f'{len(validation_dataloader)}\n')
+    click.text(f'Training commenced on device {pid}:\n').write()
+
     self.trainer(model, dataloader, optimiser, loss_fn, optimiser_step, epochs,
                  ckpt_every, pid=pid, logger=logger, validate=validate,
                  validation_dataset=validation_dataloader)
+    click.green().text(f'Training finished on device {pid}:\n').write()
 
     dist.barrier()
     dist.destroy_process_group()
 
   def cpu_init(self, **kwargs):
-    kwargs['dataset'] = torch.utils.data.DataLoader(kwargs['dataset'],
-                        batch_size=kwargs['batch_size'], pin_memory=False)
+    kwargs['dataset'] = DataLoader(kwargs['dataset'],  pin_memory=False,
+                                   batch_size=kwargs['batch_size'])
     if kwargs['validate']:
-      kwargs['validation_dataset'] = torch.utils.data\
-          .DataLoader(kwargs['validation_dataset'],
+      kwargs['validation_dataset'] = DataLoader(kwargs['validation_dataset'],
                 batch_size=len(kwargs['validation_dataset']), pin_memory=False)
+
     device = torch.device('cpu')
     logdir = kwargs['logdir']
     logger = Logger(logdir) if logdir else logdir
