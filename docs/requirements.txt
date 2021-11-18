@@ -15,7 +15,7 @@ Cython==0.29.24
 distro==1.6.0
 docutils==0.17.1
 fluiddyn==0.4.0
-furo==2021.11.12.1
+furo==2021.11.16
 grpcio==1.36.1
 h5netcdf==0.11.0
 h5py==3.5.0

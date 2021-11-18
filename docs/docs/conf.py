@@ -17,7 +17,7 @@ extensions = [
   'fluiddoc.mathmacro',
   "sphinx.ext.todo",
   "sphinx.ext.mathjax",
-  "sphinx.ext.viewcode",
+  # "sphinx.ext.viewcode",
   'sphinx_copybutton',
   "sphinxcontrib.bibtex",
 ]

@@ -1,6 +1,9 @@
 Installation
 ############
 
+.. warning::
+  This wrapper is tested on Linux arch-64.
+
 From Anadonda
 =============
 
