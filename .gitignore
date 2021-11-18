@@ -1,0 +1,17 @@
+__pycache__
+.DS_Store
+.vscode
+**.egg-info
+
+src
+build
+data
+runs
+models
+
+playground.ipynb
+main.py
+
+**.err
+**.out
+outputs
