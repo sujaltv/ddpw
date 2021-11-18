@@ -3,8 +3,10 @@ name: Publish documentation to Surge
 on:
   workflow_dispatch:
     branches:
-      - master
       - dev
+  push:
+    branches:
+      - master
 
 jobs:
   deploy:

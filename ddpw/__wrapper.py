@@ -31,6 +31,8 @@ class DDPWrapper(object):
       False
   :param torch.utils.data.Dataset,optional validation_dataset: If validation
       is sought, the dataset to validate the training on. Defaults to None
+  :param int timeout_min: Timeout (in minutes) for SLURM
+  :param str slurm_name: SLURM job name
   """
 
   timeout_min: int
