@@ -4,13 +4,13 @@ channels:
   - pytorch
   - conda-forge
 dependencies:
-  - numpy=1.21
-  - python=3.8
-  - tensorboard=1.15
   - pytorch=1.10
-  - submitit=1.2
-  - ipykernel
   - click
+  - python=3.8
+  - submitit=1.2
   - torchvision
+  - tensorboard=1.15
+  - ipykernel
+  - numpy=1.21
 prefix: /home/sujal/.conda/envs/ddpw-dev
 

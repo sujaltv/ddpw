@@ -5,10 +5,5 @@ channels:
   - conda-forge
 dependencies:
   - python=3.8
-  - tensorboard=1.15
-  - sphinx-copybutton
-  - numpy=1.21
-  - pytorch=1.10
-  - submitit=1.2
-prefix: /home/sujal/.conda/envs/ddpw-docs
+prefix: ~/.conda/envs/ddpw-docs
 
