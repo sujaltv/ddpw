@@ -12,5 +12,5 @@ dependencies:
   - tensorboard=1.15
   - ipykernel
   - numpy=1.21
-prefix: /home/sujal/.conda/envs/ddpw-dev
+prefix: ~/.conda/envs/ddpw-dev
 
