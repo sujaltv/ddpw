@@ -17,7 +17,7 @@ extensions = [
   'fluiddoc.mathmacro',
   "sphinx.ext.todo",
   "sphinx.ext.mathjax",
-  "sphinx.ext.viewcode",
+  # "sphinx.ext.viewcode",
   'sphinx_copybutton',
   "sphinxcontrib.bibtex",
 ]
@@ -29,9 +29,9 @@ html_show_sphinx = False
 html_title = 'DDPW'
 
 html_context = {
-  "display_github": False,  # 'Edit on Github' instead of 'View page source'
+  "display_github": True,  # 'Edit on Github' instead of 'View page source'
   "github_user": "sujaltv",
-  "github_repo": "phd",
+  "github_repo": "ddpw",
   "github_version": "master"
 }
 
@@ -45,3 +45,5 @@ bibtex_default_style = 'plain'
 bibtex_reference_style = 'super'
 bibtex_bibliography_header = ".. rubric:: References"
 bibtex_footbibliography_header = bibtex_bibliography_header
+
+autodoc_member_order = "bysource"

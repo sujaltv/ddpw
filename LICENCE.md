@@ -1,4 +1,4 @@
-The MIT Licence (MIT) Copyright © 2021 Sujal T. Vijayaraghavan
+The MIT Licence (MIT) Copyright © Sujal T. Vijayaraghavan
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the “Software”), to deal in

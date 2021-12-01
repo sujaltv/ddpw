@@ -1,5 +1,7 @@
 import os
+import runpy
 from setuptools import setup, find_packages
+
 
 install_requires = []
 req_path = os.path.dirname(os.path.realpath(__file__)) + '/requirements.txt'
@@ -9,12 +11,12 @@ with open(req_path) as f:
 with open("README.md", "r", encoding="utf-8") as f:
   long_description = f.read()
 
-with open("version.txt", "r", encoding="utf-8") as f:
-  version = f.read()
+__initialised__ = runpy.run_path('ddpw/__init__.py')
+__version__ = __initialised__['__version__']
 
 setup(
   name="ddpw",
-  version=version,
+  version=__version__,
   author="Sujal T.V.",
   url="http://ddpw.projects-tvs.surge.sh",
   description=r"""A utility package to scaffold PyTorch's DDP""",

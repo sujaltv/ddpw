@@ -21,8 +21,8 @@ Freeze environment
   sh freeze.sh
 
   # alternatively
-  conda export env > environment.yaml
-  pip list --format=freeze > requirements.txt
+  conda env export --no-build --from-history > environment.yaml
+  pip list --not-required --format=freeze > requirements.txt
 
 Update environent
 ^^^^^^^^^^^^^^^^^
@@ -30,10 +30,3 @@ Update environent
 .. code-block:: bash
 
   conda env update --file environment.yaml
-
-Publish manually
-^^^^^^^^^^^^^^^^
-
-.. code-block:: bash
-
-  sh publish.sh

@@ -3,7 +3,10 @@ name: Publish to Anaconda
 on:
   workflow_dispatch:
     branches:
-      - master
+      - dev
+  # push:
+  #   branches:
+  #     - master
 
 jobs:
   publish:

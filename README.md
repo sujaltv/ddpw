@@ -23,10 +23,19 @@ pip install ddpw # with pip from PyPI
 ### Usage
 
 ```python
-from ddpw import DDPWrapper, Platform
+  from ddpw.platform import PlatformConfig
+  from ddpw.artefacts import ArtefactsConfig
+  from ddpw.trainer import TrainingConfig
+  from ddpw.wrapper import Wrapper
 
-job = DDPWrapper(platform=Platform.GPU, nprocs=4, ...) # train on 4 GPUs
-job.start(epoch=30) # start training
-job.resume(ckpt=20, epochs=60) # resume training from 20th epoch
-e = job.evaluate(ckpt=50) # evaluate the model saved at 50th epoch
+  from src import CustomTrainer
+
+  p = PlatformConfig(...)
+  a = ArtefactsConfig(...)
+  t = TrainingConfig(...)
+
+  d = Wrapper(p, a)
+  j = CustomTrainer(t)
+
+  d.start(j)
 ```

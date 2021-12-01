@@ -4,9 +4,8 @@ channels:
   - pytorch
   - defaults
 dependencies:
+  - pytorch=1.10.1
+  - submitit
+  - numpy
   - python=3.8
-  - submitit=1.2
-  - pytorch=1.10
-  - numpy=1.21
-  - tensorboard=1.15
 prefix: ~/.conda/envs/ddpw

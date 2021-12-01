@@ -3,8 +3,10 @@ name: Publish documentation to Surge
 on:
   workflow_dispatch:
     branches:
-      - master
       - dev
+  # push:
+  #   branches:
+  #     - master
 
 jobs:
   deploy:
@@ -21,6 +23,7 @@ jobs:
         run: |
           cd docs
           pip install -r requirements.txt
+          sh footer-remove.sh
           make html
       - name: Deploy to surge
         uses: dswistowski/surge-sh-action@v1.0.0

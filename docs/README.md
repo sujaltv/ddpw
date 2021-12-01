@@ -18,11 +18,11 @@ pip install -r requirements.txt
 sh freeze.sh
 
 # alternatively
-conda export env > environment.yaml
+conda env export --no-build --from-history > environment.yaml
 pip list --format=freeze > requirements.txt
 ```
 
-**Update environent**
+**Update environment**
 
 ```bash
 conda env update --file environment.yaml
