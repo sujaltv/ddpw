@@ -2,7 +2,7 @@ Installation
 ############
 
 .. warning::
-  This wrapper is tested on Linux arch-64.
+  This wrapper is tested only on Linux arch-64.
 
 From Anadonda
 =============
