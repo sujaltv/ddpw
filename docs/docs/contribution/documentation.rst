@@ -22,7 +22,7 @@ Freeze environment
 
   # alternatively
   conda export env > environment.yaml
-  pip list --format=freeze > requirements.txt
+  pip list --not-required --format=freeze --exclude=dataclasses > requirements.txt
 
 Update environent
 ^^^^^^^^^^^^^^^^^

@@ -10,5 +10,8 @@ training progress.
 .. autoclass:: ddpw.LoggerType
   :members:
 
-.. autoclass:: ddpw.utils.chalk
+Module ``ddpw.utils.chalk``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: ddpw.utils.chalk.chalk
   :members:

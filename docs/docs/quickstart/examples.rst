@@ -81,16 +81,15 @@ script.
 
     #!/bin/sh
 
-    #SBATCH --output=ddp.out
-    #SBATCH --error=ddp.err
+    #SBATCH --output=ddpw.out
+    #SBATCH --error=ddpw.err
+    #SBATCH --mem=20GB
     #SBATCH --nodes=2
     #SBATCH --gpus-per-node=4
-    #SBATCH --mem=20GB
     #SBATCH --ntasks-per-node=4
-    #SBATCH --partition=Extended
-    #SBATCH --time=1-4
+    #SBATCH --partition=general
 
-    source activate ddp
+    source activate ddpw
     python main.py train
     conda deactivate
 
