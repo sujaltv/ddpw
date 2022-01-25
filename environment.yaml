@@ -1,12 +1,11 @@
 name: ddpw
 channels:
-  - defaults
   - pytorch
   - conda-forge
+  - defaults
 dependencies:
   - python=3.8
-  - pytorch=1.10
-  - submitit=1.2
-  - tensorboard=1.15
-  - numpy=1.21
+  - pytorch=1.10.1
+  - tensorboard
+  - submitit
 prefix: ~/.conda/envs/ddpw
