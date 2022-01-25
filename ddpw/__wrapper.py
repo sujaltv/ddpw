@@ -265,7 +265,8 @@ class DDPWrapper(object):
         'logdir': logdir,
         'validate': self.validate,
         'batch_size': batch_size,
-        'validation_dataset': self.validation_dataset
+        'validation_dataset': self.validation_dataset,
+        'model_has_batchnorm': self.model_has_batchnorm
     }
     hostname = os.environ.get('HOSTNAME', 'localhost')
     init_method = f'tcp://{hostname}:{self.port}'

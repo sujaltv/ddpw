@@ -6,6 +6,7 @@ import numpy as np
 import torch.distributed as dist
 from torch import multiprocessing as mp
 from torch.utils.data import DataLoader
+from torch.nn import SyncBatchNorm
 from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data.distributed import DistributedSampler
 
@@ -68,7 +69,11 @@ class AutoExecutor(object):
     validation_dataset = args['validation_dataset']
 
     model.to(gpu)
-    model = DistributedDataParallel(model, [pid])
+
+    if args['model_has_batchnorm']:
+      model = SyncBatchNorm.convert_sync_batchnorm(model)
+
+    model = DistributedDataParallel(model, [pid], find_unused_parameters=True)
     smplr = DistributedSampler(dataset, num_replicas=self.nprocs, rank=pid)
     dataloader = DataLoader(dataset, batch_size=args['batch_size'],
                             pin_memory=True, sampler=smplr)

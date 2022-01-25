@@ -3,14 +3,12 @@ __pycache__
 .vscode
 **.egg-info
 
-src
 build
 data
 runs
 models
 
-playground.ipynb
-main.py
+test
 
 **.err
 **.out
