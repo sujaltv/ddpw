@@ -3,6 +3,8 @@ import sys
 
 sys.path.insert(0, os.path.abspath('../..'))
 
+import tensorboard
+
 project = 'DDPW'
 author = 'TVS'
 templates_path = ['_templates']
@@ -17,7 +19,7 @@ extensions = [
   'fluiddoc.mathmacro',
   "sphinx.ext.todo",
   "sphinx.ext.mathjax",
-  "sphinx.ext.viewcode",
+  # "sphinx.ext.viewcode",
   'sphinx_copybutton',
   "sphinxcontrib.bibtex",
 ]
