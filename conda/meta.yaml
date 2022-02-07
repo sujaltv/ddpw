@@ -2,7 +2,7 @@
 
 package:
   name: ddpw
-  version: {{ data.get('version') }}
+  version: {{ data.get('__version__') }}
 
 source:
   path: ../
@@ -21,7 +21,6 @@ requirements:
     - submitit >=1.2
     - pytorch >=1.10
     - numpy >=1.21
-    - tensorboard >=1.15
 
 about:
   home: http://ddpw.projects-tvs.surge.sh

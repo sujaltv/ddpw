@@ -30,10 +30,3 @@ Update environent
 .. code-block:: bash
 
   conda env update --file environment.yaml
-
-Publish manually
-^^^^^^^^^^^^^^^^
-
-.. code-block:: bash
-
-  sh publish.sh

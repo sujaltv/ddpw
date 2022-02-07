@@ -20,8 +20,7 @@ Features
    c. multiple cluster-less GPUs, and
    d. SLURM-based multi-node (clustered) single/multiple GPUs (by using `Submitit <https://github.com/facebookincubator/submitit>`_)
 
-2. **Logging**. This wrapper includes APIs for logging with Tensorboard
-3. **Flexible training and evaluation**. This wrapper allows easy training, pausing, resuming, and evaluation. This means that one could train a model for :math:`50` epochs, and later on resume the training from the :math:`50^\textrm{th}` epoch
+2. **Flexible training and evaluation**. This wrapper allows easy training, pausing, resuming, and evaluation. This means that one could train a model for :math:`50` epochs, and later on resume the training from the :math:`50^\textrm{th}` epoch
 
 .. toctree::
    :caption: Introduction
@@ -30,7 +29,7 @@ Features
    :titlesonly:
 
    quickstart/installation
-   quickstart/examples
+   quickstart/example
 
 .. toctree::
    :caption: API
@@ -38,10 +37,10 @@ Features
    :hidden:
    :titlesonly:
 
-   api/ddpwrapper
-   api/platform
+   api/wrapper
    api/trainer
-   api/logger
+   api/types
+   api/utils
 
 .. toctree::
    :caption: Contribution
@@ -59,3 +58,4 @@ Features
    :titlesonly:
 
    LICENCE
+
