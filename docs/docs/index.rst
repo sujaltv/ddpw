@@ -20,7 +20,7 @@ Features
    c. multiple cluster-less GPUs, and
    d. SLURM-based multi-node (clustered) single/multiple GPUs (by using `Submitit <https://github.com/facebookincubator/submitit>`_)
 
-2. **Flexible training and evaluation**. This wrapper allows easy training, pausing, resuming, and evaluation. This means that one could train a model for :math:`50` epochs, and later on resume the training from the :math:`50^\textrm{th}` epoch
+2. **Flexible training and evaluation**. This wrapper allows easy training, pausing, resuming, and evaluation
 
 .. toctree::
    :caption: Introduction
@@ -39,6 +39,7 @@ Features
 
    api/wrapper
    api/trainer
+   api/optimiser
    api/types
    api/utils
 
@@ -48,7 +49,7 @@ Features
    :hidden:
    :titlesonly:
 
-   contribution/setup
+   contribution/source
    contribution/documentation
 
 .. toctree::
