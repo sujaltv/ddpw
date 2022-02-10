@@ -8,7 +8,7 @@ Set up
 
   # with conda
   conda env create --file environment.yaml
-  conda activate ddpw-dev
+  conda activate ddpw
 
   # with pip
   pip install -r requirements.txt

@@ -13,15 +13,13 @@ def sampler(dataset: data.Dataset, world_size: int, rank: int, batch_size: int,
   This function creates a sampler for the given process (i.e., rank) if
   necessary (i.e., if not CPU) and creates a dataloder from the sampler.
 
-  Args:
-      dataset (data.Dataset): The dataset from which to sample
-      world_size (int): The world size
-      rank (int): Current GPU
-      batch_size (int): Batch size
-      is_cpu (bool): Is the dataset for CPU. Default: `False`
+  :param data.Dataset dataset: The dataset from which to sample
+  :param int world_size: The world size
+  :param int rank: Current GPU
+  :param int batch_size: Batch size
+  :param bool is_cpu: Is the dataset for CPU. Default: `False`
 
-  Returns:
-      (data.Dataset): The dataset for the current process
+  :returns data.Dataset: The dataset for the current process
   """
 
   smplr = None if is_cpu else DistributedSampler(dataset, world_size, rank=rank)
@@ -35,13 +33,11 @@ def dataset_setup(rank: int, p: PlatformConfig, artefacts: ArtefactsConfig):
   This function selects a portion of the dataset for the current GPU (i.e., the
   rank) and splits it into train and validation in case training.
 
-  Args:
-      rank (int): Rank of the current GPU
-      p (PlatformConfig): Platform configurations
-      artefacts (ArtefactsConfig): Job configurations
+  :param int rank: Rank of the current GPU
+  :param PlatformConfig p: Platform configurations
+  :param ArtefactsConfig artefacts: Job configurations
 
-  Returns:
-      (tuple): The training set, validation set, and test set
+  :returns tuple: The training set, validation set, and test set
   """
 
   train_set: data.DataLoader = None
@@ -60,7 +56,7 @@ def dataset_setup(rank: int, p: PlatformConfig, artefacts: ArtefactsConfig):
       v_size = (dataset_size * artefacts.validation_percentage) // 100
       t_size = dataset_size - v_size
       Utils.print(
-        f'Device {rank}. Train size = {t_size}; validation size = {v_size}.')
+        f'[Device {rank}] Train size = {t_size}; validation size = {v_size}.')
       [train_set, val_set] = random_split(train_set, [t_size, v_size])
       val_set = sampler(val_set, p.world_size, rank, batch_size, is_cpu)
 
@@ -68,7 +64,7 @@ def dataset_setup(rank: int, p: PlatformConfig, artefacts: ArtefactsConfig):
 
   # if the test dataset is provided
   if (test_set := artefacts.test_set) is not None:
-    Utils.print(f'Device {rank}. Test size  {len(test_set)}.')
+    Utils.print(f'[Device {rank}] Test size  {len(test_set)}.')
     test_set = sampler(test_set, p.world_size, rank, batch_size, is_cpu)
 
   return train_set, val_set, test_set

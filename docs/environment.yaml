@@ -8,4 +8,4 @@ dependencies:
   - sphinx
   - pytorch
   - submitit
-prefix: ~/.conda/envs/ddpw-docs
+prefix: /home/s/sujal/.conda/envs/ddpw-docs

@@ -56,8 +56,10 @@ Example
         job_type=TrainingMode.TRAIN,
         start_at=0,
         epochs=50,
-        model_name_prefix='custom-net,
-        model_path='./models,
+        model_name_prefix='model',
+        model_path='./model,
+        checkpoint_name_prefix='ckpt',
+        checkpoint_path='./checkpoint',
         console_logs_path='./logs/console_logs',
         training_logs_path='./logs/tensorboard_logs',
         save_every=5,
@@ -70,6 +72,8 @@ Example
 ^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
+
+    from src.train import CustomTrainer
 
     w = Wrapper(p_config, a_config)
     task = CustomTrainer(t_config)

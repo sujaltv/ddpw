@@ -1,8 +1,14 @@
 # DDPW
 
+[![Surge](https://img.shields.io/badge/documentation-surge-blue?link=http://ddpw.projects-tvs.surge.sh)](http://ddpw.projects-tvs.surge.sh)
+[![Conda](https://img.shields.io/conda/v/tvsujal/ddpw)](https://anaconda.org/tvsujal/ddpw)
+[![PyPI](https://img.shields.io/pypi/v/ddpw)](https://pypi.org/project/ddpw/)
+
 [![Publish documentation to Surge](https://github.com/sujaltv/ddpw/actions/workflows/surge_publish.yaml/badge.svg)](https://github.com/sujaltv/ddpw/actions/workflows/surge_publish.yaml)
 [![Publish to Anaconda](https://github.com/sujaltv/ddpw/actions/workflows/conda_publish.yaml/badge.svg)](https://github.com/sujaltv/ddpw/actions/workflows/conda_publish.yaml)
 [![Publish to PyPI](https://github.com/sujaltv/ddpw/actions/workflows/pypi_publish.yaml/badge.svg)](https://github.com/sujaltv/ddpw/actions/workflows/pypi_publish.yaml)
+
+---
 
 The Distributed Data Parallel wrapper (DDPW) is created as a utility package to
 encapsulate the scaffolding for PyTorch's Distributed Data Parallel.

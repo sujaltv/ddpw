@@ -9,17 +9,16 @@ def model_setup(model: torch.nn.Module, global_rank: int, local_rank: int,
                 has_batch_norm: bool, requires_ipc: bool = True):
   r"""
   This function moves the model to the specified rank, sets it as a
-  DDP-trainable module, and synchronises batch normalisation layers, if any
+  DDP-trainable module, and synchronises batch normalisation layers, if any.
 
-  Args:
-      model (torch.nn.Module): The model to be set up
-      global_rank (int): The global rank of the GPU
-      local_rank (int): The local rank of the GPU
-      has_batch_norm (bool): if the model has batch normalisation layers in it
-      requires_ipc (bool): if there are more than one GPU
+  :param torch.nn.Module model: The model to be set up
+  :param int global_rank: The global rank of the GPU
+  :param int local_rank: The local rank of the GPU
+  :param bool has_batch_norm: if the model has batch normalisation layers in it
+  :param bool requires_ipc: if there are more than one GPU
   """
 
-  Utils.print(f'Device {global_rank}. Moving model to {local_rank}')
+  Utils.print(f'[Device {global_rank}] Moving model to {local_rank}')
 
   model = model.cuda(torch.device(local_rank))
 

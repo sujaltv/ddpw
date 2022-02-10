@@ -8,10 +8,10 @@ from torch.utils import data
 @final
 @dataclass
 class ArtefactsConfig(object):
-  r"""Configurations relating to the dataset and the model"""
+  r"""Configurations relating to the dataset and the model."""
 
   dataset_root: str = '/data/dataset'
-  r"""The path to the folder where the dataset is located."""
+  r"""Location of the dataset to be used to training or evaluation"""
 
   train_set: data.DataLoader = None
   r"""The dataset to use for training. Default: ``None``"""
@@ -24,9 +24,10 @@ class ArtefactsConfig(object):
 
   validation_percentage: float = 20
   r"""The percentage of training dataset to be used for validation. If this
-  property has a value of 0, it is assumed that no validation is required.
-  This property is ignored for evaluation. Range: 0 to 50, inclusive. Default:
-  # `20`. Enforced by the ``needs_validation`` property"""
+  property has a value of ``0``, it is assumed that no validation is required.
+  This property is ignored for evaluation. Range: ``0`` to ``50``, inclusive.
+  Default: ``20``. Range enforced by the :py:attr:`.needs_validation`
+  property"""
 
   batch_size: int = 64
   r"""Batch size for training and testing. Default: ``64``"""
@@ -41,7 +42,7 @@ class ArtefactsConfig(object):
   @property
   def needs_validation(self):
     r"""
-    This property tells if the current configuration requires validation or not
+    This property tells if the current configuration requires validation or not.
 
     :returns bool: Whether validation is required or not
     """
