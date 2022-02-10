@@ -13,12 +13,12 @@ extensions = [
   "sphinx.ext.autodoc",
   "sphinx.ext.doctest",
   "sphinx.ext.extlinks",
-  'sphinx.ext.autosummary',
-  'fluiddoc.mathmacro',
+  "sphinx.ext.autosummary",
+  "fluiddoc.mathmacro",
   "sphinx.ext.todo",
   "sphinx.ext.mathjax",
   # "sphinx.ext.viewcode",
-  'sphinx_copybutton',
+  "sphinx_copybutton",
   "sphinxcontrib.bibtex",
 ]
 
@@ -46,4 +46,6 @@ bibtex_reference_style = 'super'
 bibtex_bibliography_header = ".. rubric:: References"
 bibtex_footbibliography_header = bibtex_bibliography_header
 
+autodoc_preserve_defaults = True
+autodoc_typehints_format = 'short' # short typehints for class/method arguments
 autodoc_member_order = "bysource"

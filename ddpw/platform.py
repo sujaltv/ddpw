@@ -23,19 +23,19 @@ class Platform(Enum):
 class PlatformConfig(object):
   r"""
   Platform-related configurations such as the environment, communication IP
-  address and port, world size, etc.
+  address and port, world size, `etc.`
   """
 
   name: str = 'DDPW'
   r"""Name of the platform job. Used for SLURM. Default: ``DDPW``"""
 
   verbose: bool = True
-  r"""Whether to run the wrapper in a verbose mode or not. Default: `True`"""
+  r"""Whether to run the wrapper in a verbose mode or not. Default: ``True``"""
 
   spawn_method: str = 'spawn'
   r"""The way in which to start a new process, one for each GPU. This
-  corresponds to the arguments passed on to ``set_start_method`` in Python's and
-  PyTorch's multiprocessing. Default: ``spawn``"""
+  corresponds to the arguments passed on to :py:meth:`set_start_method` in
+  Python's (and PyTorch's) ``multiprocessing`` module. Default: ``spawn``"""
 
   partition: str = 'general'
   r"""Name of the partition. Used for SLURM. Default: ``general``"""
@@ -45,7 +45,7 @@ class PlatformConfig(object):
 
   n_nodes: int = 1
   r"""The total number of nodes. For training on a single cluster of GPUs, this
-  property is 1. Default: ``1``"""
+  property is ``1``. Default: ``1``"""
 
   n_gpus: int = 1
   r"""The total number of GPUs allotted in each node. Default: ``1``"""
@@ -55,7 +55,7 @@ class PlatformConfig(object):
   happens. Default: ``localhost``"""
 
   master_port: str = '1889'
-  r"""The port at which IPC communication happens. Default: ``1889``"""
+  r"""The port at which IPC happens. Default: ``1889``"""
 
   backend: dist.Backend = dist.Backend.GLOO
   r"""The PyTorch-suppored backend to used for distributed data parallel.
@@ -83,5 +83,6 @@ class PlatformConfig(object):
   @property
   def requires_ipc(self):
     r"""Needs communication. This property tells whether the setup requires IPC.
-    IPC is not required for a single CPU or a single GPU."""
+    IPC is not required for a single CPU or a single GPU"""
+
     return self.platform != Platform.CPU and self.world_size > 1

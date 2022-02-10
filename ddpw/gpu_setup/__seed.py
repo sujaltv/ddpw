@@ -6,10 +6,9 @@ import numpy as np
 
 def seed_generators(seed: int):
   r"""
-  Seed all random number generators of various packages
+  Seed all random number generators of various packages.
 
-  Args:
-      seed (int): The seed to initialise
+  :param int seed: The seed to initialise
   """
 
   random.seed(seed)

@@ -3,9 +3,9 @@ import torch.distributed as dist
 
 
 class Utils(object):
-  #: A global boolean property to specify if the wrapper must print contents or
-  # not
   verbose: bool = True
+  r"""A global boolean property to specify if the wrapper must print contents or
+  not."""
 
   @staticmethod
   def print(*args, **kwargs):
@@ -18,7 +18,7 @@ class Utils(object):
     if 'flush' not in kwargs:
       kwargs['flush'] = True
 
-    if Utils.verbose: print(*args, **kwargs)
+    if kwargs.get('verbose', Utils.verbose): print(*args, **kwargs)
 
   @staticmethod
   def all_average_gradients(model: torch.nn.Module):
@@ -47,7 +47,7 @@ class Utils(object):
     <https://discuss.pytorch.org/t/moving-optimizer-from-cpu-to-gpu/96068>`_
     suggested on PyTorch's Discuss forum.
 
-    :param torch.optim.Optimizer optimiser The optimiser to move to a device
+    :param torch.optim.Optimizer optimiser: The optimiser to move to a device
     :param torch.device device: The device to which to move the optimiser
     """
 

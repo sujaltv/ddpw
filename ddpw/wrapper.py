@@ -22,7 +22,7 @@ class Wrapper(object):
   def __init__(self, p: PlatformConfig, a_config: ArtefactsConfig):
     Utils.verbose = p.verbose
 
-    Utils.print('Initialising the DDP Wrapper..')
+    Utils.print('Initialising the DDP Wrapper.')
     self.p: PlatformConfig = p
     self.a_config: ArtefactsConfig = a_config
 
@@ -35,15 +35,15 @@ class Wrapper(object):
 
   def __gpu(self, run: Trainer):
     r"""
-    This method sets up the training setup for cluster-less GPUs
+    This method sets up the training setup for cluster-less GPUs.
     """
 
     if self.p.world_size == 1:
-      Utils.print('Device 0. Task starting on GPU.')
+      Utils.print('[Device 0] Task starting on GPU.')
       init_process(0, 0, run, self.p, self.a_config)
       return
 
-    Utils.print(f'Spawning {self.p.world_size} processes')
+    Utils.print(f'Spawning {self.p.world_size} processes.')
     processes = []
 
     # create a process for each GPU in the world
@@ -60,14 +60,15 @@ class Wrapper(object):
 
   def __slurm(self, individual_gpu, console_logs_path: str = './logs'):
     r"""
-    This method sets up the training setup for SLURM-based clusters of GPU nodes
+    This method sets up the training setup for SLURM-based clusters of GPU
+    nodes.
 
-    Args:
-        run (Trainer): Custom training/evaluation task
-        console_logs_path (str): Location to save console logs
+    :param Trainer run: Custom training/evaluation task
+    :param str console_logs_path: Location to save console logs. Default:
+        ``./logs``
     """
 
-    Utils.print('Setting up the SLURM platform')
+    Utils.print('Setting up the SLURM platform.')
 
     executor = AutoExecutor(folder=console_logs_path)
     executor.update_parameters(
@@ -91,7 +92,7 @@ class Wrapper(object):
     :param Trainer run: Custom training/evaluation definitions
     """
 
-    Utils.print(f'Selected platform: {self.p.platform.name}')
+    Utils.print(f'Selected platform: {self.p.platform.name}.')
     Utils.print('Starting process(es).')
 
     if self.p.platform == Platform.CPU:
@@ -99,24 +100,24 @@ class Wrapper(object):
 
     elif self.p.platform == Platform.GPU:
       self.__gpu(run)
-      Utils.print('GPU processes finished')
+      Utils.print('GPU processes finished.')
 
     elif self.p.platform == Platform.SLURM:
       def individual_gpu():
         r"""
-        This nested function is the starting point for each SLURM-based GPU
+        This nested function is the starting point for each SLURM-based GPU.
         """
 
         self.p.master_addr = os.environ['HOSTNAME']
         job_env = JobEnvironment()
 
         Utils.print(f'Node {job_env.node}: Local rank: {job_env.local_rank};' +
-                    f'Gloal rank: {job_env.global_rank}')
+                    f'Gloal rank: {job_env.global_rank}.')
 
         init_process(job_env.global_rank, job_env.local_rank, run, self.p,
                      self.a_config)
 
       job = self.__slurm(individual_gpu, run.t_config.console_logs_path)
-      Utils.print(f'SLURM job "{self.p.name}" scheduled. Job ID: {job.job_id}')
+      Utils.print(f'SLURM job "{self.p.name}" scheduled. Job ID: {job.job_id}.')
 
     Utils.print('All jobs finished.')
