@@ -15,6 +15,11 @@ From Anadonda
   :width: 125
   :alt: Conda publication
 
+.. image:: https://img.shields.io/conda/v/tvsujal/ddpw
+  :target: https://anaconda.org/tvsujal/ddpw
+  :width: 125
+  :alt: Conda publication
+
 .. code:: bash
 
   conda install -c tvsujal ddpw
