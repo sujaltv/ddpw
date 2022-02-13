@@ -12,7 +12,7 @@ class Utils(object):
     r"""
     A custom print method that prints the contents if verbose.
 
-    :param bool verbose: Whether to print or not. Defaults to ``True``
+    :param bool verbose: Whether to print or not. Default: ``None``.
     """
 
     if 'flush' not in kwargs:
@@ -27,7 +27,7 @@ class Utils(object):
     GPUs in the world. Copied and modified from `PyTorch Blog
     <https://pytorch.org/tutorials/intermediate/dist_tuto.html>`_.
 
-    :param nn.Module model: The model whose gradients are to be averages
+    :param nn.Module model: The model whose gradients are to be averages.
     """
 
     world_size = float(dist.get_world_size())
@@ -44,11 +44,11 @@ class Utils(object):
     This function offers a simple way to move all parameters of an optimiser or,
     effectively the optimiser itself, to the specified device. This method has
     been taken as is from a `solution
-    <https://discuss.pytorch.org/t/moving-optimizer-from-cpu-to-gpu/96068>`_
+    <https://discuss.pytorch.org/t/moving-optimizer-from-cpu-to-gpu/96068/3>`_
     suggested on PyTorch's Discuss forum.
 
-    :param torch.optim.Optimizer optimiser: The optimiser to move to a device
-    :param torch.device device: The device to which to move the optimiser
+    :param torch.optim.Optimizer optimiser: The optimiser to move to a device.
+    :param torch.device device: The device to which to move the optimiser.
     """
 
     for param in optimiser.state.values():

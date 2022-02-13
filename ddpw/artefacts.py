@@ -1,8 +1,28 @@
+import abc
 from typing import final
 from dataclasses import dataclass
 
 from torch import nn
+from torch import optim
 from torch.utils import data
+from torch.nn.modules.loss import _Loss as Loss
+
+
+class OptimiserLoader(object):
+  r"""This class contains the optimiser with required configurations."""
+
+  @abc.abstractmethod
+  def __call__(self, model: nn.Module) -> optim.Optimizer:
+    r"""This method receives the model whose parameters are to be loaded into
+    the optimiser.
+
+    :param model: The model whose parameters are to be loaded into the
+      optimiser.
+
+    :raises NotImplementedError: Method not implemented.
+    """
+
+    raise NotImplementedError
 
 
 @final
@@ -11,40 +31,52 @@ class ArtefactsConfig(object):
   r"""Configurations relating to the dataset and the model."""
 
   dataset_root: str = '/data/dataset'
-  r"""Location of the dataset to be used to training or evaluation"""
+  r"""Location of the dataset to be used to training or evaluation."""
 
   train_set: data.DataLoader = None
-  r"""The dataset to use for training. Default: ``None``"""
+  r"""The dataset to use for training. Default: ``None``."""
 
   test_set: data.DataLoader = None
-  r"""The dataset to use for evaluation. Default: ``None``"""
+  r"""The dataset to use for evaluation. Default: ``None``."""
 
   validation_set: data.DataLoader = None
-  r"""The dataset to use for validation. Default: ``None``"""
+  r"""The dataset to use for validation. Default: ``None``."""
 
   validation_percentage: float = 20
   r"""The percentage of training dataset to be used for validation. If this
   property has a value of ``0``, it is assumed that no validation is required.
   This property is ignored for evaluation. Range: ``0`` to ``50``, inclusive.
   Default: ``20``. Range enforced by the :py:attr:`.needs_validation`
-  property"""
+  property."""
 
   batch_size: int = 64
-  r"""Batch size for training and testing. Default: ``64``"""
+  r"""Batch size for training and testing. Default: ``64``."""
 
   model: nn.Module = None
-  r"""An instance of the model to train. Default: ``None``"""
+  r"""An instance of the model to train. Default: ``None``."""
 
   model_has_batch_norm: bool = False
   r"""Specifies if the model to be trained has batch normalisation in it.
-  Default: ``False``"""
+  Default: ``False``."""
+
+  loss_fn: Loss = None
+  r"""An instance of the :class:`Loss` module. Default: ``None``."""
+
+  optimiser_config: OptimiserLoader = None
+  r"""Optimiser setup to be passed by the user. Default: ``None``."""
+
+  optimiser: optim.Optimizer = None
+  r"""The wrapper loads model parameters into the optimiser with the specified
+  configs in :py:attr:`optimiser_config` and updates this parameter. This could
+  be accessed in :py:meth:`.Trainer.train` or :py:meth:`.Trainer.evaluate`.
+  Default: ``None``."""
 
   @property
   def needs_validation(self):
     r"""
     This property tells if the current configuration requires validation or not.
 
-    :returns bool: Whether validation is required or not
+    :returns bool: Whether validation is required or not.
     """
 
     return 0 < self.validation_percentage <= 50
