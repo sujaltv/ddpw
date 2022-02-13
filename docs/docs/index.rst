@@ -39,6 +39,7 @@ Features
 
    api/wrapper
    api/trainer
+   api/optimiser
    api/types
    api/utils
 

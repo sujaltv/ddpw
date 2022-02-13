@@ -1,8 +1,8 @@
-from distutils.command.build import build
 import os
 from setuptools import setup, find_packages
 
 from ddpw import __version__, __build__
+
 
 install_requires = []
 req_path = os.path.dirname(os.path.realpath(__file__)) + '/requirements.txt'
