@@ -59,15 +59,15 @@ class PlatformConfig(object):
   r"""The port at which IPC happens. Default: ``1889``."""
 
   backend: dist.Backend = dist.Backend.GLOO
-  r"""The PyTorch-suppored backend to used for distributed data parallel.
+  r"""The PyTorch-supported backend to used for distributed data parallel.
   Default: ``torch.distributed.Backend.GLOO``."""
 
   seed: int = 1889
-  r"""Seed to initialise the various random number generators. Default:
-   ``1889``."""
+  r"""Seed with which to initialise the various random number generators.
+  Default: ``1889``."""
 
   timeout_min: int = 2880
-  r"""Minimum timeout (in minutes) for a SLURM-based job. Used only on SLURM
+  r"""Minimum timeout (in minutes) for SLURM-based jobs. Used only on SLURM
   platforms. Default: ``2880`` (two days)."""
 
   cpus_per_task: int = 1

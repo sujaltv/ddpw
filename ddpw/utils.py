@@ -23,11 +23,11 @@ class Utils(object):
   @staticmethod
   def all_average_gradients(model: torch.nn.Module):
     r"""
-    Given a model, this method averages the gradients of the model in all the
-    GPUs in the world. Copied and modified from `PyTorch Blog
+    Given a model, this method averages the gradients of the model across all
+    the GPUs in the world. Copied and modified from `PyTorch Blog
     <https://pytorch.org/tutorials/intermediate/dist_tuto.html>`_.
 
-    :param nn.Module model: The model whose gradients are to be averages.
+    :param nn.Module model: The model whose gradients are to be averaged.
     """
 
     world_size = float(dist.get_world_size())

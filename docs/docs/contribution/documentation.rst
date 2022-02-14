@@ -9,8 +9,6 @@ Set up
   # with conda
   conda env create --file environment.yaml
   conda activate ddpw-docs
-
-  # with pip
   pip install -r requirements.txt
 
 Freeze environment
@@ -24,8 +22,8 @@ Freeze environment
   conda env export --no-build --from-history > environment.yaml
   pip list --not-required --format=freeze > requirements.txt
 
-Update environent
-^^^^^^^^^^^^^^^^^
+Update environment
+^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 

@@ -44,20 +44,21 @@ def init_process(global_rank: int, local_rank: int, run: Trainer,
   __seed_generators(p_config.seed)
 
   # 1. organise the dataset into splits
-  Utils.print(f'[Device {global_rank}] Selecting portion of the dataset.')
+  Utils.print(f'[Device {global_rank}] ' +
+              f'Selecting portion of the dataset to local GPU {local_rank}.')
   artefacts.train_set, artefacts.validation_set, artefacts.test_set = \
     __dataset_setup(global_rank, p_config, artefacts)
 
   # 2. Set up the model on the current device
   if p_config.platform != Platform.CPU:
     Utils.print(f'[Device {global_rank}] ' +
-                f'Copying the model to GPU {local_rank}.')
-    artefacts.model = __model_setup(artefacts.model, global_rank, local_rank,
+                f'Copying the model to local GPU {local_rank}.')
+    artefacts.model = __model_setup(artefacts.model, local_rank,
                                     artefacts.model_has_batch_norm,
                                     p_config.requires_ipc)
 
   # 3. Wait for all processes to synchronise and then start the task
-  Utils.print(f'[Device {global_rank}] Training model on device {global_rank}.')
+  Utils.print(f'[Device {global_rank}] Training model on device {local_rank}.')
   if p_config.requires_ipc:
     dist.barrier()
   run.p_config = p_config

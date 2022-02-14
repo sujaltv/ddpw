@@ -2,8 +2,7 @@ import abc
 from typing import final
 from dataclasses import dataclass
 
-from torch import nn
-from torch import optim
+from torch import nn, optim
 from torch.utils import data
 from torch.nn.modules.loss import _Loss as Loss
 
@@ -13,12 +12,18 @@ class OptimiserLoader(object):
 
   @abc.abstractmethod
   def __call__(self, model: nn.Module) -> optim.Optimizer:
-    r"""This method receives the model whose parameters are to be loaded into
-    the optimiser.
+    r"""
+    .. admonition:: Definition required
+      :class: important
 
-    :param model: The model whose parameters are to be loaded into the
+      This method needs to be explicitly defined by the user.
+
+    This method receives the model whose parameters are to be loaded into the
+    optimiser.
+
+    :param nn.Module model: The model whose parameters are to be loaded into the
       optimiser.
-
+    :returns optim.Optimizer: The desired optimiser with model parameters loaded
     :raises NotImplementedError: Method not implemented.
     """
 
@@ -66,10 +71,19 @@ class ArtefactsConfig(object):
   r"""Optimiser setup to be passed by the user. Default: ``None``."""
 
   optimiser: optim.Optimizer = None
-  r"""The wrapper loads model parameters into the optimiser with the specified
+  r"""
+  .. admonition:: Definition not required
+   :class: note
+
+   This property need not be specified by the user and will be automatically
+   updated by the wrapper right before training. This can be directly in the
+   :py:meth:`.Trainer.train` method.
+
+  The wrapper loads model parameters into the optimiser with the specified
   configs in :py:attr:`optimiser_config` and updates this parameter. This could
   be accessed in :py:meth:`.Trainer.train` or :py:meth:`.Trainer.evaluate`.
-  Default: ``None``."""
+  Default: ``None``.
+  """
 
   @property
   def needs_validation(self):

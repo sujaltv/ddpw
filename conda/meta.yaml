@@ -28,7 +28,7 @@ about:
   description: The Distributed Data Parallel wrapper (DDPW) is created as a
             utility package to encapsulate the scaffolding for PyTorch's
             Distributed Data Parallel.
-  license: MIT
+  license: BSD 3-Clause
   dev_url: https://github.com/sujaltv/ddpw
   doc_url: http://ddpw.projects-tvs.surge.sh
   doc_source_url: https://github.com/sujaltv/ddpw/tree/master/docs

@@ -53,6 +53,14 @@ Features
    contribution/documentation
 
 .. toctree::
+   :caption: Miscellaneous
+   :glob:
+   :hidden:
+   :titlesonly:
+
+   quickstart/mnist
+
+.. toctree::
    :caption: Bureau
    :glob:
    :hidden:

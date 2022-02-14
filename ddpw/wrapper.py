@@ -12,7 +12,7 @@ from .platform import Platform, PlatformConfig
 
 class Wrapper(object):
   r"""
-  This class provides encapsulation for training a model on a CPU, GPU, or a
+  This class provides encapsulation for training the model on a CPU, GPU, or a
   SLURM-based cluster of GPU nodes.
 
   :param PlatformConfig p_config: Platform-related configurations.

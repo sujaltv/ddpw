@@ -15,11 +15,6 @@ From Anadonda
   :width: 125
   :alt: Conda publication
 
-.. image:: https://img.shields.io/conda/v/tvsujal/ddpw
-  :target: https://anaconda.org/tvsujal/ddpw
-  :width: 125
-  :alt: Conda publication
-
 .. code:: bash
 
   conda install -c tvsujal ddpw
@@ -32,7 +27,7 @@ From source
   > git clone https://github.com/sujaltv/ddpw
   > cd ddpw/conda
 
-  > conda-build . # generates a distribution
+  > conda-build . # generates a binary distribution
   > conda install  <distribution_path>
 
 With ``pip``

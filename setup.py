@@ -24,7 +24,7 @@ setup(
   packages=find_packages(),
   classifiers=[
       "Programming Language :: Python :: 3",
-      "License :: OSI Approved :: MIT License",
+      "License :: OSI Approved :: BSD License",
       "Operating System :: MacOS",
       "Operating System :: Microsoft :: Windows",
       "Operating System :: POSIX :: Linux"
