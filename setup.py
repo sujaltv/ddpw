@@ -17,7 +17,7 @@ setup(
   version=__version__,
   build=__build__,
   author="Sujal T.V.",
-  url="http://ddpw.projects-tvs.surge.sh",
+  url="https://ddpw.projects.sujal.tv",
   description=r"""A utility package to scaffold PyTorch's DDP""",
   long_description=long_description,
   long_description_content_type="text/markdown",

@@ -22,7 +22,7 @@ requirements:
     - submitit >=1.2
 
 about:
-  home: http://ddpw.projects-tvs.surge.sh
+  home: https://ddpw.projects.sujal.tv
   summary:  A utility package to encapsulate the scaffolding for PyTorch's
             Distributed Data Parallel
   description: The Distributed Data Parallel wrapper (DDPW) is created as a
@@ -30,5 +30,5 @@ about:
             Distributed Data Parallel.
   license: BSD 3-Clause
   dev_url: https://github.com/sujaltv/ddpw
-  doc_url: http://ddpw.projects-tvs.surge.sh
+  doc_url: https://ddpw.projects.sujal.tv
   doc_source_url: https://github.com/sujaltv/ddpw/tree/master/docs

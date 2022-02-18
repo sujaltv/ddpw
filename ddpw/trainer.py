@@ -66,7 +66,7 @@ class TrainingConfig(object):
 class Trainer(object):
   r"""
   This is a template class with abstract methods to be defined by the user.
-  This class provides methods to define training and evaluation methods. Once
+  This class provides methods to define training and evaluation procedures. Once
   the wrapper has moved the model and the dataset to the appropriate device, it
   calls :py:meth:`.train()` or :py:meth:`.evaluate()` as configured.
   """
@@ -173,7 +173,7 @@ class Trainer(object):
 
     Utils.print(f'Loading model at {file_path}.')
     checkpoint = torch.load(file_path)
-    self.t_config.save_every = checkpoint['stopped_at']
+    self.t_config.start_at = checkpoint['stopped_at']
     self.artefacts.model.load_state_dict(checkpoint['model'])
     self.artefacts.optimiser.load_state_dict(checkpoint['optimiser'])
 

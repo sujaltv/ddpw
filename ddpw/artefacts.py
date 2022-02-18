@@ -8,7 +8,16 @@ from torch.nn.modules.loss import _Loss as Loss
 
 
 class OptimiserLoader(object):
-  r"""This class contains the optimiser with required configurations."""
+  r"""
+  This class allows usage of optimisers with desired configurations. Before it
+  begins the training/evaluation process, it uses the optimiser specified in
+  this class.
+
+  Of course, this class could be extended to customise as desired: to use
+  different optimiser-specific parameters such as the learning rate, weight
+  decay, momentum, `etc.`, as well as defining a set of optimisers to choose
+  from depending on the desired optimiser at run-time.
+  """
 
   @abc.abstractmethod
   def __call__(self, model: nn.Module) -> optim.Optimizer:
@@ -19,11 +28,12 @@ class OptimiserLoader(object):
       This method needs to be explicitly defined by the user.
 
     This method receives the model whose parameters are to be loaded into the
-    optimiser.
+    optimiser. Once configured as desired, it returns the optimiser.
 
     :param nn.Module model: The model whose parameters are to be loaded into the
       optimiser.
-    :returns optim.Optimizer: The desired optimiser with model parameters loaded
+    :returns optim.Optimizer: The desired optimiser with configurations set and
+        model parameters loaded
     :raises NotImplementedError: Method not implemented.
     """
 

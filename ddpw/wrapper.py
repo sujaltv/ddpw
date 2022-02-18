@@ -13,7 +13,9 @@ from .platform import Platform, PlatformConfig
 class Wrapper(object):
   r"""
   This class provides encapsulation for training the model on a CPU, GPU, or a
-  SLURM-based cluster of GPU nodes.
+  SLURM-based cluster of GPU nodes. Once platform- and artefacts-specific
+  configurations are specified, a task (for training or evaluation) may be
+  created and started.
 
   :param PlatformConfig p_config: Platform-related configurations.
   :param ArtefactsConfig a_config: Dataset- and model-related configurations.
@@ -35,7 +37,9 @@ class Wrapper(object):
 
   def __gpu(self, run: Trainer):
     r"""
-    This method sets up the training setup for cluster-less GPUs.
+    This method spins up a process for each GPU in the world. It assigns the
+    task to be run on each process, `viz.`, distributing the datasets and models
+    and commencing the task.
     """
 
     if self.p_config.world_size == 1:
@@ -60,8 +64,8 @@ class Wrapper(object):
 
   def __slurm(self, individual_gpu, console_logs_path: str = './logs'):
     r"""
-    This method sets up the training setup for SLURM-based clusters of GPU
-    nodes.
+    Similar to :py:meth:`.__gpu` but for SLURM. An additional step includes
+    spinning up a process for each node, done with ``submitit``.
 
     :param Trainer run: Custom training/evaluation task.
     :param str console_logs_path: Location to save console logs. Default:
@@ -86,8 +90,8 @@ class Wrapper(object):
 
   def start(self, run: Trainer):
     r"""
-    This method begins the setup process for CPU/GPU/SLURM-based training and
-    starts the task.
+    This method begins the setup process for CPU/GPU/SLURM-based jobs and
+    commences the task (for training or evaluation).
 
     :param Trainer run: Custom training/evaluation definitions.
     """
