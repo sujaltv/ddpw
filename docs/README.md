@@ -1,7 +1,7 @@
 # DDPW Documentation
 
 This is the source for the [DDPW
-Documentation](http://ddpw.projects-tvs.surge.sh) written in Python 3.8 with
+Documentation](https://ddpw.projects.sujal.tv) written in Python 3.8 with
 [Sphinx](https://www.sphinx-doc.org/en/master/).
 
 ## Set up

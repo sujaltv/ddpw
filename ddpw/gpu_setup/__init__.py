@@ -15,13 +15,14 @@ from .__seed import seed_generators as __seed_generators
 def init_process(global_rank: int, local_rank: int, run: Trainer,
                  p_config: PlatformConfig, artefacts: ArtefactsConfig):
   r"""
-  This function is called at the beginning of the process in each GPU. This
-  function establishes DDP communication protocols, selects a portion of the
-  data for the current GPU, moves the model to the device, and starts the given
+  This function is called at the beginning of the process in each device
+  (CPU/GPU). Depending on the needs, this function establishes DDP communication
+  protocols, seeds random number generators, selects a portion of the data for
+  the current GPU, moves a copy of the model to the device, and starts the given
   task.
 
-  :param int global_rank: The global rank of the GPU.
-  :param int local_rank: The local rank of the GPU.
+  :param int global_rank: Global rank of the GPU.
+  :param int local_rank: Local rank of the GPU.
   :param Job run: The task to run when once the setup is complete.
   :param PlatformConfig p_config: Platform-related configurations.
   :param ArtefactsConfig artefacts: Model-related configurations.
