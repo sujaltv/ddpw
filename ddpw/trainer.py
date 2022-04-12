@@ -220,8 +220,9 @@ class Trainer(object):
 
     Utils.print(
       f'[Device {global_rank}] Copying model parameters to the optimiser.')
-    self.artefacts.optimiser = self.artefacts.optimiser_config(
-      self.artefacts.model)
+    if self.artefacts.optimiser_config is not None:
+      self.artefacts.optimiser = self.artefacts.optimiser_config(
+        self.artefacts.model)
 
     # if this task is resumption from or evaluation of a saved model, load it
     if self.t_config.job_type in [TrainingMode.RESUME, TrainingMode.EVALUATE]:

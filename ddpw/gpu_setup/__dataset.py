@@ -1,3 +1,5 @@
+from typing import Optional, Callable
+
 from torch.utils import data
 from torch.utils.data import DistributedSampler, DataLoader, random_split
 
@@ -7,7 +9,8 @@ from ..platform import Platform, PlatformConfig
 
 
 def sampler(dataset: data.Dataset, world_size: int, global_rank: int,
-            batch_size: int, is_cpu: bool = False):
+            batch_size: int, collate_fn: Optional[Callable] = None,
+            is_cpu: bool = False):
   r"""
   This function selects a portion of the original dataset shared by other
   devices. If the device being trained on is a CPU, no sharing is necessary.
@@ -17,6 +20,8 @@ def sampler(dataset: data.Dataset, world_size: int, global_rank: int,
   :param int world_size: World size.
   :param int global_rank: Global rank of the current GPU.
   :param int batch_size: Batch size.
+  :param Optional[Callable] collate_fn: The collate function to use in the
+      dataloader.
   :param bool is_cpu: Specifies if the device is a CPU. Default: `False`.
 
   :returns data.Dataset: A dataloader with portion of the dataset selected for
@@ -25,7 +30,8 @@ def sampler(dataset: data.Dataset, world_size: int, global_rank: int,
 
   smplr = None if is_cpu else DistributedSampler(dataset, world_size,
                                                  rank=global_rank)
-  return DataLoader(dataset, batch_size, sampler=smplr, pin_memory=True)
+  return DataLoader(dataset, batch_size, sampler=smplr, pin_memory=True,
+                    collate_fn=collate_fn)
 
 
 def dataset_setup(global_rank: int, p_config: PlatformConfig,
@@ -49,9 +55,9 @@ def dataset_setup(global_rank: int, p_config: PlatformConfig,
   test_loader = None
 
   is_cpu = p_config.platform == Platform.CPU
-  batch_size = artefacts.batch_size
+  batch_size, collate_fn = artefacts.batch_size, artefacts.collate_fn
 
-  args = (p_config.world_size, global_rank, batch_size, is_cpu)
+  args = (p_config.world_size, global_rank, batch_size, collate_fn, is_cpu)
 
   # if the training dataset is provided
   if (train_set := artefacts.train_set) is not None:
@@ -61,8 +67,7 @@ def dataset_setup(global_rank: int, p_config: PlatformConfig,
       dataset_size = len(train_set)
       v_size = (dataset_size * artefacts.validation_percentage) // 100
       t_size = dataset_size - v_size
-      Utils.print(
-        f'\tTrain size = {t_size}; validation size = {v_size}.')
+      Utils.print(f'\tTrain size = {t_size}; validation size = {v_size}.')
       [train_set, val_set] = random_split(train_set, [t_size, v_size])
       val_loader = sampler(val_set, *args)
 

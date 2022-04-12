@@ -23,7 +23,7 @@ jobs:
       - name: Copying build files
         run: |
           mkdir app
-          cp -r docs/build/html ./app
+          cp -r docs/build/html/** ./app
       - name: Publish to AWS S3
         uses: jakejarvis/s3-sync-action@master
         with:
