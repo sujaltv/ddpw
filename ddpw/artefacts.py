@@ -1,5 +1,5 @@
 import abc
-from typing import final
+from typing import final, Optional, Callable
 from dataclasses import dataclass
 
 from torch import nn, optim
@@ -20,7 +20,7 @@ class OptimiserLoader(object):
   """
 
   @abc.abstractmethod
-  def __call__(self, model: nn.Module) -> optim.Optimizer:
+  def __call__(self, model: Optional[nn.Module]) -> optim.Optimizer:
     r"""
     .. admonition:: Definition required
       :class: important
@@ -30,8 +30,8 @@ class OptimiserLoader(object):
     This method receives the model whose parameters are to be loaded into the
     optimiser. Once configured as desired, it returns the optimiser.
 
-    :param nn.Module model: The model whose parameters are to be loaded into the
-      optimiser.
+    :param Optional[nn.Module] model: The model whose parameters are to be
+      loaded into the optimiser.
     :returns optim.Optimizer: The desired optimiser with configurations set and
         model parameters loaded
     :raises NotImplementedError: Method not implemented.
@@ -48,14 +48,18 @@ class ArtefactsConfig(object):
   dataset_root: str = '/data/dataset'
   r"""Location of the dataset to be used to training or evaluation."""
 
-  train_set: data.DataLoader = None
+  train_set: data.Dataset = None
   r"""The dataset to use for training. Default: ``None``."""
 
-  test_set: data.DataLoader = None
+  test_set: data.Dataset = None
   r"""The dataset to use for evaluation. Default: ``None``."""
 
-  validation_set: data.DataLoader = None
+  validation_set: data.Dataset = None
   r"""The dataset to use for validation. Default: ``None``."""
+
+  collate_fn: Optional[Callable] = None
+  r"""Any callable function to be passed down to the dataloader. Default:
+   ``None``."""
 
   validation_percentage: float = 20
   r"""The percentage of training dataset to be used for validation. If this

@@ -54,9 +54,10 @@ def init_process(global_rank: int, local_rank: int, run: Trainer,
   if p_config.platform != Platform.CPU:
     Utils.print(f'[Device {global_rank}] ' +
                 f'Copying the model to local GPU {local_rank}.')
-    artefacts.model = __model_setup(artefacts.model, local_rank,
-                                    artefacts.model_has_batch_norm,
-                                    p_config.requires_ipc)
+    if (artefacts.model is not None):
+      artefacts.model = __model_setup(artefacts.model, local_rank,
+                                      artefacts.model_has_batch_norm,
+                                      p_config.requires_ipc)
 
   # 3. Wait for all processes to synchronise and then start the task
   Utils.print(f'[Device {global_rank}] Training model on device {local_rank}.')
