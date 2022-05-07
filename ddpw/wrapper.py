@@ -116,8 +116,8 @@ class Wrapper(object):
         self.p_config.master_addr = os.environ['HOSTNAME']
         job_env = JobEnvironment()
 
-        Utils.print(f'Node {job_env.node}: Local rank: {job_env.local_rank};' +
-                    f'Gloal rank: {job_env.global_rank}.')
+        Utils.print(f'Node {job_env.node}: Local rank: {job_env.local_rank}; ' +
+                    f'Global rank: {job_env.global_rank}.')
 
         init_process(job_env.global_rank, job_env.local_rank, run,
                      self.p_config, self.a_config)
