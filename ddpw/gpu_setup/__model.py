@@ -23,6 +23,6 @@ def model_setup(model: torch.nn.Module, local_rank: int, has_batch_norm: bool,
       model = SyncBatchNorm.convert_sync_batchnorm(model)
 
     model = DistributedDataParallel(model, device_ids=[local_rank],
-                                    find_unused_parameters=False)
+                                    find_unused_parameters=True)
 
   return model
