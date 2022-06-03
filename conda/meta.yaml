@@ -5,7 +5,7 @@ package:
   version: {{ data.get('version') }}
 
 source:
-  path: ../
+  path: ..
 
 build:
   noarch: generic
@@ -14,13 +14,13 @@ build:
 
 requirements:
   build:
-    - python 3.8
-    - numpy >=1.21
+    - python>=3.8
+    - numpy>=1.21
     - setuptools
     - git
   run:
-    - pytorch >=1.10
-    - submitit >=1.2
+    - pytorch>=1.10
+    - submitit>=1.2
 
 about:
   home: https://ddpw.projects.sujal.tv

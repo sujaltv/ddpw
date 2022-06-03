@@ -2,12 +2,12 @@ DDPW
 ####
 
 The **Distributed Data Parallel wrapper** is a minimal PyTorch-based wrapper
-written in Python 3.8 that makes it easy to run deep learning models on multiple
-nodes and GPUs as well as on a single CPU.
+that makes it easy to run deep learning models on a CPU, a GPU, multiple GPUSs,
+or clustered nodes of GPUs.
 
-This is a "DDP" wrapper; it supports data parallelism across GPUs, not model
-parallelism. To learn more about DDP, refer to PyTorch documentation on DDP or
-`this nice Medium article
+This is a "DDP" wrapper; it supports data parallelism across processors, not
+model parallelism. To learn more about DDP, refer to PyTorch documentation on
+DDP or `this nice Medium article
 <https://medium.com/mlearning-ai/distributed-data-parallel-with-slurm-submitit-pytorch-168c1004b2ca>`_.
 
 Features
@@ -20,7 +20,7 @@ Features
    c. multiple cluster-less GPUs, and
    d. SLURM-based multi-node (clustered) single/multiple GPUs (by using `Submitit <https://github.com/facebookincubator/submitit>`_)
 
-2. **Flexible training and evaluation**. This wrapper allows easy training, pausing, resuming, and evaluation
+2. **Flexible training and evaluation**. This wrapper allows easy training, pausing, resuming, and evaluating of models
 
 .. toctree::
    :caption: Introduction

@@ -13,7 +13,7 @@
 The Distributed Data Parallel wrapper (DDPW) is created as a utility package to
 encapsulate the scaffolding for PyTorch's Distributed Data Parallel.
 
-This code is written in Python 3.8. The [DDPW
+This code is written in Python. The [DDPW
 documentation](https://ddpw.projects.sujal.tv) contains details on how to use
 this package.
 
