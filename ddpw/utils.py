@@ -24,6 +24,7 @@ class Utils(object):
       if 'verbose' in kwargs: del(kwargs['verbose'])
       print(*args, **kwargs)
 
+
   @staticmethod
   def all_average_gradients(model: torch.nn.Module):
     r"""
@@ -41,6 +42,22 @@ class Utils(object):
       dist.all_reduce(params.grad, op=dist.ReduceOp.SUM)
       params.grad /= world_size
 
+
+  @staticmethod
+  def all_params_gradients(model: torch.nn.Module):
+    r"""
+    Given a model, this method averages the parameters of the model across all
+    the GPUs in the world.
+
+    :param nn.Module model: The model whose parameters are to be averaged.
+    """
+
+    world_size = float(dist.get_world_size())
+
+    for params in model.parameters():
+      if params is None: continue
+      dist.all_reduce(params, op=dist.ReduceOp.SUM)
+      params /= world_size
 
   @staticmethod
   def optimiser_to(optimiser: torch.optim.Optimizer, device: torch.device):

@@ -5,21 +5,22 @@ package:
   version: {{ data.get('version') }}
 
 source:
-  path: ../
+  path: ..
 
 build:
+  noarch: generic
   number: {{ data.get('build') }}
   script: python setup.py install --single-version-externally-managed --record=record.txt
 
 requirements:
   build:
-    - python 3.8
-    - numpy >=1.21
+    - python>=3.8
+    - numpy>=1.21
     - setuptools
     - git
   run:
-    - pytorch >=1.10
-    - submitit >=1.2
+    - pytorch>=1.10
+    - submitit>=1.2
 
 about:
   home: https://ddpw.projects.sujal.tv

@@ -1,13 +1,7 @@
-import os
 from setuptools import setup, find_packages
 
 from ddpw import __version__, __build__
 
-
-install_requires = []
-req_path = os.path.dirname(os.path.realpath(__file__)) + '/requirements.txt'
-with open(req_path) as f:
-  install_requires = f.read().splitlines()
 
 with open("README.md", "r", encoding="utf-8") as f:
   long_description = f.read()
@@ -30,5 +24,5 @@ setup(
       "Operating System :: POSIX :: Linux"
   ],
   python_requires='>=3.8',
-  install_requires=install_requires
+  install_requires=['numpy>=1.22.2', 'submitit>=1.2.1', 'torch>=1.10.1']
 )

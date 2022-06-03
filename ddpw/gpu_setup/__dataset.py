@@ -54,6 +54,8 @@ def dataset_setup(global_rank: int, p_config: PlatformConfig,
   val_loader = None
   test_loader = None
 
+  val_set = artefacts.validation_set
+
   is_cpu = p_config.platform == Platform.CPU
   batch_size, collate_fn = artefacts.batch_size, artefacts.collate_fn
 
@@ -69,6 +71,7 @@ def dataset_setup(global_rank: int, p_config: PlatformConfig,
       t_size = dataset_size - v_size
       Utils.print(f'\tTrain size = {t_size}; validation size = {v_size}.')
       [train_set, val_set] = random_split(train_set, [t_size, v_size])
+    if val_set is not None:
       val_loader = sampler(val_set, *args)
 
     train_loader = sampler(train_set, *args)

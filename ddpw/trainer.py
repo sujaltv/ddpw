@@ -146,7 +146,7 @@ class Trainer(object):
     optimiser gradients, the current epoch, `etc`., and can be called at every
     few epochs (as specified in :py:attr:`.TrainingConfig.save_every`) or as
     needed. Override this method to save more information. The state so saved is
-    used by the :py:meth:`.__restore_state` method that is called to resume from
+    used by the :py:meth:`.restore_state` method that is called to resume from
     a checkpoint or evaluate a model.
 
     :param int epoch: The epoch number at which to save the training state.
@@ -160,7 +160,7 @@ class Trainer(object):
     torch.save(checkpoint, os.path.join(self.t_config.checkpoint_path,
                           f'{self.t_config.checkpoint_name_prefix}_{epoch}.pt'))
 
-  def __restore_state(self, resume_at: int):
+  def restore_state(self, resume_at: int):
     r"""
     Restore training from a saved state.
 
@@ -227,7 +227,7 @@ class Trainer(object):
     # if this task is resumption from or evaluation of a saved model, load it
     if self.t_config.job_type in [TrainingMode.RESUME, TrainingMode.EVALUATE]:
       Utils.print(f'[Device {global_rank}] Model load setup underway.')
-      self.__restore_state(self.t_config.start_at)
+      self.restore_state(self.t_config.start_at)
 
     # whether to training (or resumption) or evaluate
     if self.t_config.job_type in [TrainingMode.TRAIN, TrainingMode.RESUME]:
