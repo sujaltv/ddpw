@@ -17,8 +17,8 @@ jobs:
           python-version: 3.8
       - name: Instal and build
         run: |
-          cd docs
           pip install -r requirements.txt
+          cd docs
           make html
       - name: Copying build files
         run: |
