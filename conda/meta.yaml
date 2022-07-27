@@ -21,7 +21,7 @@ requirements:
   run:
     - python
     - pytorch >=1.10
-    - submitit >=1.2
+    # - submitit >=1.2
 
 about:
   home: https://ddpw.projects.sujal.tv

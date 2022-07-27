@@ -1,5 +1,6 @@
 import os
 
+import torch
 import torch.distributed as dist
 
 from ..utils import Utils
@@ -51,13 +52,15 @@ def init_process(global_rank: int, local_rank: int, run: Trainer,
     __dataset_setup(global_rank, p_config, artefacts)
 
   # 2. Set up the model on the current device
-  if p_config.platform != Platform.CPU:
+  if p_config.platform not in [Platform.CPU, Platform.MPS]:
     Utils.print(f'[Device {global_rank}] ' +
                 f'Copying the model to local GPU {local_rank}.')
     if (artefacts.model is not None):
       artefacts.model = __model_setup(artefacts.model, local_rank,
                                       artefacts.model_has_batch_norm,
                                       p_config.requires_ipc)
+  elif p_config.platform == Platform.MPS:
+    artefacts.model.to(torch.device('mps'))
 
   # 3. Wait for all processes to synchronise and then start the task
   Utils.print(f'[Device {global_rank}] Training model on device {local_rank}.')

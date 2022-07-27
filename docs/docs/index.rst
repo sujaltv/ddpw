@@ -3,7 +3,8 @@ DDPW
 
 The **Distributed Data Parallel wrapper** is a minimal PyTorch-based wrapper
 that makes it easy to run deep learning models on a CPU, a GPU, multiple GPUSs,
-or clustered nodes of GPUs.
+or clustered nodes of GPUs. It also includes support for training Mac's Apple
+M1.
 
 This is a "DDP" wrapper; it supports data parallelism across processors, not
 model parallelism. To learn more about DDP, refer to PyTorch documentation on
@@ -17,8 +18,9 @@ Features
 
    a. a single CPU,
    b. a single GPU,
-   c. multiple cluster-less GPUs, and
-   d. SLURM-based multi-node (clustered) single/multiple GPUs (by using `Submitit <https://github.com/facebookincubator/submitit>`_)
+   c. Mac's Apple M1 SoCs,
+   d. multiple cluster-less GPUs, and
+   e. SLURM-based multi-node (clustered) single/multiple GPUs (by using `Submitit <https://github.com/facebookincubator/submitit>`_)
 
 2. **Flexible training and evaluation**. This wrapper allows easy training, pausing, resuming, and evaluating of models
 
