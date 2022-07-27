@@ -17,11 +17,11 @@ setup(
   long_description_content_type="text/markdown",
   packages=find_packages(),
   classifiers=[
-      "Programming Language :: Python :: 3",
-      "License :: OSI Approved :: BSD License",
-      "Operating System :: MacOS",
-      "Operating System :: Microsoft :: Windows",
-      "Operating System :: POSIX :: Linux"
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux"
   ],
   python_requires='>=3.8',
   install_requires=['numpy>=1.22.2', 'submitit>=1.2.1', 'torch>=1.10.1']

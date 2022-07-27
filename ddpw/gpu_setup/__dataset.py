@@ -16,13 +16,14 @@ def sampler(dataset: data.Dataset, world_size: int, global_rank: int,
   devices. If the device being trained on is a CPU, no sharing is necessary.
 
   :param data.Dataset dataset: The dataset from which to sample for the current
-      device.
+    device.
   :param int world_size: World size.
   :param int global_rank: Global rank of the current GPU.
   :param int batch_size: Batch size.
   :param Optional[Callable] collate_fn: The collate function to use in the
-      dataloader.
-  :param bool is_cpu: Specifies if the device is a CPU. Default: `False`.
+    dataloader.
+  :param bool is_cpu: Specifies if the device is a CPU or Apple M1. Default:
+    `False`.
 
   :returns data.Dataset: A dataloader with portion of the dataset selected for
       the current process.
@@ -56,7 +57,7 @@ def dataset_setup(global_rank: int, p_config: PlatformConfig,
 
   val_set = artefacts.validation_set
 
-  is_cpu = p_config.platform == Platform.CPU
+  is_cpu = p_config.platform in [Platform.CPU, Platform.MPS]
   batch_size, collate_fn = artefacts.batch_size, artefacts.collate_fn
 
   args = (p_config.world_size, global_rank, batch_size, collate_fn, is_cpu)

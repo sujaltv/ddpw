@@ -99,9 +99,9 @@ class Wrapper(object):
     Utils.print(f'Selected platform: {self.p_config.platform.name}.')
     Utils.print('Starting process(es).')
 
-    if self.p_config.platform == Platform.CPU:
+    if self.p_config.platform in [Platform.CPU, Platform.MPS]:
       init_process(0, 0, run, self.p_config, self.a_config)
-      Utils.print('CPU process finished.')
+      Utils.print('CPU/MPS process finished.')
 
     elif self.p_config.platform == Platform.GPU:
       self.__gpu(run)

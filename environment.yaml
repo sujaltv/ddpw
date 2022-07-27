@@ -8,4 +8,7 @@ dependencies:
   - submitit
   - numpy
   - python=3.8
-prefix: ~/.conda/envs/ddpw
+  - sphinx
+  - conda-build
+  - anaconda-client
+prefix: /home/s/sujal/.conda/envs/ddpw

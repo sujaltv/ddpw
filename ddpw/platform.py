@@ -18,6 +18,8 @@ class Platform(Enum):
   SLURM = 2
   r"""The platform to run on is a SLURM-based cluster of GPU nodes."""
 
+  MPS = 3
+  r"""The platform to run on is Mac's Apple M1 SoCs."""
 
 @final
 @dataclass
@@ -58,7 +60,7 @@ class PlatformConfig(object):
   master_port: str = '1889'
   r"""The port at which IPC happens. Default: ``1889``."""
 
-  backend: dist.Backend = dist.Backend.GLOO
+  backend = dist.Backend.GLOO if hasattr(dist, 'Backend') else None
   r"""The PyTorch-supported backend to used for distributed data parallel.
   Default: ``torch.distributed.Backend.GLOO``."""
 
@@ -84,6 +86,7 @@ class PlatformConfig(object):
   @property
   def requires_ipc(self):
     r"""Needs communication. This property tells whether the setup requires IPC.
-    IPC is not required for a single CPU or a single GPU."""
+    IPC is not required for a single CPU, a single GPU, or Apple M1."""
 
-    return self.platform != Platform.CPU and self.world_size > 1
+    return self.platform not in [Platform.CPU, Platform.MPS] \
+      and self.world_size > 1
