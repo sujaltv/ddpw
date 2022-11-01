@@ -157,6 +157,10 @@ class Trainer(object):
       'model': self.artefacts.model.state_dict(),
       'optimiser': self.artefacts.optimiser.state_dict()
     }
+
+    if not os.path.exists(self.t_config.checkpoint_path):
+      os.makedirs(self.t_config.checkpoint_path)
+
     torch.save(checkpoint, os.path.join(self.t_config.checkpoint_path,
                           f'{self.t_config.checkpoint_name_prefix}_{epoch}.pt'))
 
@@ -187,6 +191,9 @@ class Trainer(object):
     """
 
     if dst is None:
+      if not os.path.exists(self.t_config.model_path):
+        os.makedirs(self.t_config.model_path)
+
       dst = os.path.join(self.t_config.model_path,
                           f'{self.t_config.model_name_prefix}.pt')
 

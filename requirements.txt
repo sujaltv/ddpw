@@ -1,8 +1,6 @@
 anaconda-client==1.8.0
 brotlipy==0.7.0
 colorama==0.4.4
-conda-build==3.21.9
-conda-package-handling==1.8.1
 fluiddyn==0.5.0
 furo==2022.1.2
 pip==22.0.3

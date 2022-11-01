@@ -7,9 +7,7 @@ or clustered nodes of GPUs. It also includes support for training Mac's Apple
 M1.
 
 This is a "DDP" wrapper; it supports data parallelism across processors, not
-model parallelism. To learn more about DDP, refer to PyTorch documentation on
-DDP or `this nice Medium article
-<https://medium.com/mlearning-ai/distributed-data-parallel-with-slurm-submitit-pytorch-168c1004b2ca>`_.
+model parallelism.
 
 Features
 ========

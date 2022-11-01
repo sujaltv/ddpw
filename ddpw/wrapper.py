@@ -1,7 +1,6 @@
 import os
 
 import torch.multiprocessing as mp
-from submitit import AutoExecutor, JobEnvironment
 
 from .utils import Utils
 from .trainer import Trainer
@@ -71,6 +70,7 @@ class Wrapper(object):
     :param str console_logs_path: Location to save console logs. Default:
         ``./logs``.
     """
+    from submitit import AutoExecutor
 
     Utils.print('Setting up the SLURM platform.')
 
@@ -108,6 +108,7 @@ class Wrapper(object):
       Utils.print('GPU processes finished.')
 
     elif self.p_config.platform == Platform.SLURM:
+      from submitit import JobEnvironment
       def individual_gpu():
         r"""
         This nested function is the starting point for each SLURM-based GPU.
