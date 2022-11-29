@@ -3,6 +3,7 @@ from typing import final
 from dataclasses import dataclass
 
 import torch.distributed as dist
+from .utils import Utils
 
 
 @final
@@ -90,3 +91,24 @@ class PlatformConfig(object):
 
     return self.platform not in [Platform.CPU, Platform.MPS] \
       and self.world_size > 1
+
+  def print(self):
+    r"""
+    This method prints this object in a readable format.
+    """
+
+    Utils.print('Platform details:')
+    Utils.print(f' • Name:                                {self.name}')
+    Utils.print(f' • Spawn method:                        {self.spawn_method}')
+    Utils.print(f' • SLURM partition (if applicable):     {self.partition}')
+    Utils.print(f' • Platform:                            {self.platform}')
+    Utils.print(f' • Nodes:                               {self.n_nodes}')
+    Utils.print(f' • GPUs:                                {self.n_gpus}')
+    Utils.print(f' • CPUs per task:                       {self.cpus_per_task}')
+    Utils.print(f' • SLURM timeout (if applicable):       {self.timeout_min}')
+    Utils.print(f' • Seed (for random number generators): {self.seed}')
+    Utils.print(f' • PyTorch backend:                     {self.backend}')
+    if self.requires_ipc:
+      Utils.print(f' • Master IP address:                   {self.master_addr}')
+      Utils.print(f' • Master port:                         {self.master_port}')
+    Utils.print(f' • World size:                          {self.world_size}')
