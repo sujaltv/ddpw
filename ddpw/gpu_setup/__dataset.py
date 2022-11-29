@@ -36,7 +36,7 @@ def sampler(dataset: data.Dataset, world_size: int, global_rank: int,
 
 
 def dataset_setup(global_rank: int, p_config: PlatformConfig,
-                  artefacts: ArtefactsConfig):
+                  a_config: ArtefactsConfig):
   r"""
   This function selects a portion of the training dataset for validation if
   specified. In case of training/testing on multiple devices, it then allocates
@@ -45,7 +45,7 @@ def dataset_setup(global_rank: int, p_config: PlatformConfig,
 
   :param int global_rank: Global rank of the current GPU.
   :param PlatformConfig p_config: Platform configurations.
-  :param ArtefactsConfig artefacts: Job configurations.
+  :param ArtefactsConfig a_config: Job configurations.
 
   :returns tuple: A triplet of dataloaders for the training, validation, and
       test datasets respectively.
@@ -55,20 +55,20 @@ def dataset_setup(global_rank: int, p_config: PlatformConfig,
   val_loader = None
   test_loader = None
 
-  val_set = artefacts.validation_set
+  val_set = a_config.validation_set
 
   is_cpu = p_config.platform in [Platform.CPU, Platform.MPS]
-  batch_size, collate_fn = artefacts.batch_size, artefacts.collate_fn
+  batch_size, collate_fn = a_config.batch_size, a_config.collate_fn
 
   args = (p_config.world_size, global_rank, batch_size, collate_fn, is_cpu)
 
   # if the training dataset is provided
-  if (train_set := artefacts.train_set) is not None:
+  if (train_set := a_config.train_set) is not None:
 
     # if requested to set aside a portion of the training set for validation
-    if artefacts.needs_validation:
+    if a_config.needs_validation:
       dataset_size = len(train_set)
-      v_size = (dataset_size * artefacts.validation_percentage) // 100
+      v_size = (dataset_size * a_config.validation_percentage) // 100
       t_size = dataset_size - v_size
       Utils.print(f'\tTrain size = {t_size}; validation size = {v_size}.')
       [train_set, val_set] = random_split(train_set, [t_size, v_size])
@@ -78,7 +78,7 @@ def dataset_setup(global_rank: int, p_config: PlatformConfig,
     train_loader = sampler(train_set, *args)
 
   # if the test dataset is provided
-  if (test_set := artefacts.test_set) is not None:
+  if (test_set := a_config.test_set) is not None:
     Utils.print(f'\tTest size  {len(test_set)}.')
     test_loader = sampler(test_set, *args)
 

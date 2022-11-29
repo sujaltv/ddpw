@@ -4,7 +4,7 @@ import torch.multiprocessing as mp
 from submitit import AutoExecutor, JobEnvironment
 
 from .utils import Utils
-from .trainer import Trainer
+from .job import Job
 from .gpu_setup import init_process
 from .artefacts import ArtefactsConfig
 from .platform import Platform, PlatformConfig
@@ -35,7 +35,7 @@ class Wrapper(object):
         Utils.print(
           f'Warning: {e}. Skipping setting the start method for forks.')
 
-  def __gpu(self, run: Trainer):
+  def __gpu(self, run: Job):
     r"""
     This method spins up a process for each GPU in the world. It assigns the
     task to be run on each process, `viz.`, distributing the datasets and models
@@ -67,7 +67,7 @@ class Wrapper(object):
     Similar to :py:meth:`.__gpu` but for SLURM. An additional step includes
     spinning up a process for each node, done with ``submitit``.
 
-    :param Trainer run: Custom training/evaluation task.
+    :param Job run: Custom training/evaluation task.
     :param str console_logs_path: Location to save console logs. Default:
         ``./logs``.
     """
@@ -88,15 +88,22 @@ class Wrapper(object):
 
     return executor.submit(individual_gpu)
 
-  def start(self, run: Trainer):
+  def start(self, run: Job):
     r"""
     This method begins the setup process for CPU/GPU/SLURM-based jobs and
     commences the task (for training or evaluation).
 
-    :param Trainer run: Custom training/evaluation definitions.
+    :param Job run: Custom training/evaluation definitions.
     """
 
-    Utils.print(f'Selected platform: {self.p_config.platform.name}.')
+    run.p_config = self.p_config
+    run.a_config = self.a_config
+
+    Utils.print('Setup details.')
+    run.p_config.print()
+    run.a_config.print()
+    run.j_config.print()
+
     Utils.print('Starting process(es).')
 
     if self.p_config.platform in [Platform.CPU, Platform.MPS]:
@@ -122,6 +129,7 @@ class Wrapper(object):
         init_process(job_env.global_rank, job_env.local_rank, run,
                      self.p_config, self.a_config)
 
-      job = self.__slurm(individual_gpu, run.t_config.console_logs_path)
+      job = self.__slurm(individual_gpu, run.j_config.console_logs_path)
       Utils.print(f'SLURM job "{self.p_config.name}" scheduled; ' +
                   f'job ID: {job.job_id}.')
+      Utils.print(f'See respective device logs for output on those devices.')

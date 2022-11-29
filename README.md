@@ -31,17 +31,17 @@ pip install ddpw # with pip from PyPI
 ```python
   from ddpw.platform import PlatformConfig
   from ddpw.artefacts import ArtefactsConfig
-  from ddpw.trainer import TrainingConfig
+  from ddpw.job import JobConfig
   from ddpw.wrapper import Wrapper
 
-  from src import CustomTrainer
+  from src import MyTrainer
 
   p = PlatformConfig(...)
   a = ArtefactsConfig(...)
-  t = TrainingConfig(...)
+  t = JobConfig(...)
 
   d = Wrapper(p, a)
-  j = CustomTrainer(t)
+  j = MyTrainer(t)
 
   d.start(j)
 ```

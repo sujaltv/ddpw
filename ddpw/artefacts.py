@@ -4,7 +4,8 @@ from dataclasses import dataclass
 
 from torch import nn, optim
 from torch.utils import data
-from torch.nn.modules.loss import _Loss as Loss
+
+from .utils import Utils
 
 
 class OptimiserLoader(object):
@@ -45,9 +46,6 @@ class OptimiserLoader(object):
 class ArtefactsConfig(object):
   r"""Configurations relating to the dataset and the model."""
 
-  dataset_root: str = '/data/dataset'
-  r"""Location of the dataset to be used to training or evaluation."""
-
   train_set: data.Dataset = None
   r"""The dataset to use for training. Default: ``None``."""
 
@@ -61,11 +59,11 @@ class ArtefactsConfig(object):
   r"""Any callable function to be passed down to the dataloader. Default:
    ``None``."""
 
-  validation_percentage: float = 20
+  validation_percentage: float = 0
   r"""The percentage of training dataset to be used for validation. If this
   property has a value of ``0``, it is assumed that no validation is required.
   This property is ignored for evaluation. Range: ``0`` to ``50``, inclusive.
-  Default: ``20``. Range enforced by the :py:attr:`.needs_validation`
+  Default: ``0``. Range enforced by the :py:attr:`.needs_validation`
   property."""
 
   batch_size: int = 64
@@ -78,9 +76,6 @@ class ArtefactsConfig(object):
   r"""Specifies if the model to be trained has batch normalisation in it.
   Default: ``False``."""
 
-  loss_fn: Loss = None
-  r"""An instance of the :class:`Loss` module. Default: ``None``."""
-
   optimiser_config: OptimiserLoader = None
   r"""Optimiser setup to be passed by the user. Default: ``None``."""
 
@@ -91,11 +86,11 @@ class ArtefactsConfig(object):
 
    This property need not be specified by the user and will be automatically
    updated by the wrapper right before training. This can be directly in the
-   :py:meth:`.Trainer.train` method.
+   :py:meth:`.Job.train` method.
 
   The wrapper loads model parameters into the optimiser with the specified
   configs in :py:attr:`optimiser_config` and updates this parameter. This could
-  be accessed in :py:meth:`.Trainer.train` or :py:meth:`.Trainer.evaluate`.
+  be accessed in :py:meth:`.Job.train` or :py:meth:`.Job.evaluate`.
   Default: ``None``.
   """
 
@@ -108,3 +103,18 @@ class ArtefactsConfig(object):
     """
 
     return 0 < self.validation_percentage <= 50
+
+  def print(self):
+    r"""
+    This method prints this object in a readable format.
+    """
+
+    Utils.print('Artefacts details:')
+    Utils.print(' • Train dataset:                       ' +
+                f'{len(self.train_set) if self.train_set is not None else 0}')
+    Utils.print(' • Test dataset:                        ' +
+                f'{len(self.test_set) if self.test_set is not None else 0}')
+    if self.needs_validation:
+      Utils.print(' • Validation percentage:               ' +
+                  f'{self.validation_percentage}')
+    Utils.print(f' • Batch size:                          {self.batch_size}')
