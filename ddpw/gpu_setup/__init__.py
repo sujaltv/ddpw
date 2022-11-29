@@ -4,7 +4,7 @@ import torch
 import torch.distributed as dist
 
 from ..utils import Utils
-from ..trainer import Trainer
+from ..job import Job
 from ..artefacts import ArtefactsConfig
 from ..platform import Platform, PlatformConfig
 
@@ -13,8 +13,8 @@ from .__dataset import dataset_setup as __dataset_setup
 from .__seed import seed_generators as __seed_generators
 
 
-def init_process(global_rank: int, local_rank: int, run: Trainer,
-                 p_config: PlatformConfig, artefacts: ArtefactsConfig):
+def init_process(global_rank: int, local_rank: int, run: Job,
+                 p_config: PlatformConfig, a_config: ArtefactsConfig):
   r"""
   This function is called at the beginning of the process in each device
   (CPU/GPU). Depending on the needs, this function establishes DDP communication
@@ -26,7 +26,7 @@ def init_process(global_rank: int, local_rank: int, run: Trainer,
   :param int local_rank: Local rank of the GPU.
   :param Job run: The task to run when once the setup is complete.
   :param PlatformConfig p_config: Platform-related configurations.
-  :param ArtefactsConfig artefacts: Model-related configurations.
+  :param ArtefactsConfig a_config: Model-related configurations.
   """
 
   Utils.print(f'[Device {global_rank}] Initialising the process.')
@@ -48,29 +48,29 @@ def init_process(global_rank: int, local_rank: int, run: Trainer,
   # 1. organise the dataset into splits
   Utils.print(f'[Device {global_rank}] ' +
               f'Selecting portion of the dataset to local GPU {local_rank}.')
-  artefacts.train_set, artefacts.validation_set, artefacts.test_set = \
-    __dataset_setup(global_rank, p_config, artefacts)
+  a_config.train_set, a_config.validation_set, a_config.test_set = \
+    __dataset_setup(global_rank, p_config, a_config)
 
   # 2. Set up the model on the current device
   if p_config.platform not in [Platform.CPU, Platform.MPS]:
     Utils.print(f'[Device {global_rank}] ' +
                 f'Copying the model to local GPU {local_rank}.')
-    if (artefacts.model is not None):
-      artefacts.model = __model_setup(artefacts.model, local_rank,
-                                      artefacts.model_has_batch_norm,
+    if (a_config.model is not None):
+      a_config.model = __model_setup(a_config.model, local_rank,
+                                      a_config.model_has_batch_norm,
                                       p_config.requires_ipc)
   elif p_config.platform == Platform.MPS:
-    artefacts.model.to(torch.device('mps'))
+    a_config.model.to(torch.device('mps'))
 
   # 3. Wait for all processes to synchronise and then start the task
   Utils.print(f'[Device {global_rank}] Training model on device {local_rank}.')
   if p_config.requires_ipc:
     dist.barrier()
   run.p_config = p_config
-  run.artefacts = artefacts
+  run.a_config = a_config
 
   Utils.print(f'[Device {global_rank}] All setup finished.')
-  run(global_rank)
+  run(global_rank, local_rank)
 
   if p_config.requires_ipc:
     dist.destroy_process_group()
