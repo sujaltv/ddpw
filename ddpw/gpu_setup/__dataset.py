@@ -70,16 +70,20 @@ def dataset_setup(global_rank: int, p_config: PlatformConfig,
       dataset_size = len(train_set)
       v_size = (dataset_size * a_config.validation_percentage) // 100
       t_size = dataset_size - v_size
-      Utils.print(f'\tTrain size = {t_size}; validation size = {v_size}.')
       [train_set, val_set] = random_split(train_set, [t_size, v_size])
     if val_set is not None:
       val_loader = sampler(val_set, *args)
+      Utils.print(f'[Device {global_rank}] ' +
+                f'Allocated validation set portion: {len(val_loader)}')
 
     train_loader = sampler(train_set, *args)
+    Utils.print(f'[Device {global_rank}] ' +
+                f'Received training set portion: {len(train_loader)}')
 
   # if the test dataset is provided
   if (test_set := a_config.test_set) is not None:
-    Utils.print(f'\tTest size  {len(test_set)}.')
     test_loader = sampler(test_set, *args)
+    Utils.print(f'[Device {global_rank}] ' +
+                f'Received test set portion: {len(test_loader)}')
 
   return train_loader, val_loader, test_loader

@@ -10,7 +10,7 @@
 
 ---
 
-The Distributed Data Parallel wrapper (DDPW) is created as a utility package to
+**Distributed Data Parallel Wrapper (DDPW)** is created as a utility package to
 encapsulate the scaffolding for PyTorch's Distributed Data Parallel.
 
 This code is written in Python. The [DDPW
@@ -29,19 +29,29 @@ pip install ddpw # with pip from PyPI
 ### Usage
 
 ```python
-  from ddpw.platform import PlatformConfig
-  from ddpw.artefacts import ArtefactsConfig
-  from ddpw.job import JobConfig
-  from ddpw.wrapper import Wrapper
+from ddpw.platform import Platform, PlatformConfig
+from ddpw.artefacts import ArtefactsConfig
+from ddpw.job import JobConfig, JobMode
+from ddpw.wrapper import Wrapper
 
-  from src import MyTrainer
+from src import MyDataset, MyModel, MyOptimiser, MyTrainer
 
-  p = PlatformConfig(...)
-  a = ArtefactsConfig(...)
-  t = JobConfig(...)
+# datasets
+train_set = MyDataset(train=True)
+test_set = MyDataset(train=False)
 
-  d = Wrapper(p, a)
-  j = MyTrainer(t)
+# configure the platform
+p_config = PlatformConfig(platform=Platform.GPU, n_gpus=4, cpus_per_task=2)
 
-  d.start(j)
+# configure the artefacts (model, dataset, optimiser, etc.)
+a_config = ArtefactsConfig(train_set=train_set, test_set=test_set,
+    batch_size=64, model=MyModel(), optimiser_config=MyOptimiser(lr=0.1))
+
+# configure the job
+j_config = JobConfig(job_type=JobMode.TRAIN, start_at=0, epochs=50,
+    save_every=5)
+
+# call the job
+w = Wrapper(p_config, a_config)
+w.start(MyTrainer(j_config))
 ```

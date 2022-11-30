@@ -22,6 +22,7 @@ class Platform(Enum):
   MPS = 3
   r"""The platform to run on is Mac's Apple M1 SoCs."""
 
+
 @final
 @dataclass
 class PlatformConfig(object):

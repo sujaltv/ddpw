@@ -96,12 +96,9 @@ class Wrapper(object):
     :param Job run: Custom training/evaluation definitions.
     """
 
-    run.p_config = self.p_config
-    run.a_config = self.a_config
-
     Utils.print('Setup details.')
-    run.p_config.print()
-    run.a_config.print()
+    self.p_config.print()
+    self.a_config.print()
     run.j_config.print()
 
     Utils.print('Starting process(es).')

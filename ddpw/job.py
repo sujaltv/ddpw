@@ -38,7 +38,7 @@ class JobConfig(object):
 
   Setting this to a negative value skips model/state restoration in case of
   testing or restoration. This is useful if there it no model to perform the
-  task on, _i.e._, this is useful for running jobs that are to be done on the
+  task on, `i.e.`, this is useful for running jobs that are to be done on the
   GPU that are not necessarily training or evaluating a model.
   """
 
