@@ -9,5 +9,5 @@ dependencies:
   - submitit
   - numpy
   - python=3.8
-  - pytorch=1.10.1
+  - pytorch=1.13.1
   - conda-build

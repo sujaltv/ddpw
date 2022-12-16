@@ -80,15 +80,11 @@ Example with MNIST
   from ddpw.artefacts import OptimiserLoader
 
 
-  class MyOptimiser(OptimiserLoader):
-    def __init__(self, lr=0.1):
-      self.lr = lr
-
-    def __call__(self, model: torch.nn.Module) -> torch.optim.Optimizer:
-      return torch.optim.Adadelta(params=model.parameters(), lr=self.lr)
+  def my_optimiser(model: torch.nn.Module) -> torch.optim.Optimizer:
+      return torch.optim.Adadelta(params=model.parameters(), lr=1e-3)
 
 
-4. Custom job
+1. Custom job
 =================
 .. _MNIST custom job:
 

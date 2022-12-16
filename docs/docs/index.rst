@@ -41,7 +41,7 @@ Example
     from ddpw.job import JobConfig, JobMode
     from ddpw.wrapper import Wrapper
 
-    from src import MyDataset, MyModel, MyOptimiser, MyTrainer
+    from src import MyDataset, MyModel, MyTrainer, my_optimiser
 
     # datasets
     train_set = MyDataset(train=True)
@@ -52,7 +52,7 @@ Example
 
     # configure the artefacts (model, dataset, optimiser, etc.)
     a_config = ArtefactsConfig(train_set=train_set, test_set=test_set,
-        batch_size=64, model=MyModel(), optimiser_config=MyOptimiser(lr=0.1))
+        batch_size=64, model=MyModel(), optimiser_loader=my_optimiser)
 
     # configure the job
     j_config = JobConfig(job_type=JobMode.TRAIN, start_at=0, epochs=50,
@@ -81,7 +81,6 @@ artefacts are implemented.
 
    api/wrapper
    api/job
-   api/optimiser
    api/types
    api/utils
 

@@ -8,38 +8,8 @@ from torch.utils import data
 from .utils import Utils
 
 
-class OptimiserLoader(object):
-  r"""
-  This class allows usage of optimisers with desired configurations. Before it
-  begins the training/evaluation process, it uses the optimiser specified in
-  this class.
-
-  Of course, this class could be extended to customise as desired: to use
-  different optimiser-specific parameters such as the learning rate, weight
-  decay, momentum, `etc.`, as well as defining a set of optimisers to choose
-  from depending on the desired optimiser at run-time.
-  """
-
-  @abc.abstractmethod
-  def __call__(self, model: Optional[nn.Module]) -> optim.Optimizer:
-    r"""
-    .. admonition:: Definition required
-      :class: important
-
-      This method needs to be explicitly defined by the user.
-
-    This method receives the model whose parameters are to be loaded into the
-    optimiser. Once configured as desired, it returns the optimiser.
-
-    :param Optional[nn.Module] model: The model whose parameters are to be
-      loaded into the optimiser.
-    :returns optim.Optimizer: The desired optimiser with configurations set and
-        model parameters loaded
-    :raises NotImplementedError: Method not implemented.
-    """
-
-    raise NotImplementedError
-
+OptimiserLoader = Callable[[nn.Module], optim.Optimizer]
+r"""A callable that accepts a module and returns a PyTorch optimiser."""
 
 @final
 @dataclass
@@ -76,7 +46,7 @@ class ArtefactsConfig(object):
   r"""Specifies if the model to be trained has batch normalisation in it.
   Default: ``False``."""
 
-  optimiser_config: OptimiserLoader = None
+  optimiser_loader: OptimiserLoader = None
   r"""Optimiser setup to be passed by the user. Default: ``None``."""
 
   optimiser: optim.Optimizer = None
@@ -89,7 +59,7 @@ class ArtefactsConfig(object):
    :py:meth:`.Job.train` method.
 
   The wrapper loads model parameters into the optimiser with the specified
-  configs in :py:attr:`optimiser_config` and updates this parameter. This could
+  configs in :py:attr:`optimiser_loader` and updates this parameter. This could
   be accessed in :py:meth:`.Job.train` or :py:meth:`.Job.evaluate`.
   Default: ``None``.
   """

@@ -45,7 +45,7 @@ p_config = PlatformConfig(platform=Platform.GPU, n_gpus=4, cpus_per_task=2)
 
 # configure the artefacts (model, dataset, optimiser, etc.)
 a_config = ArtefactsConfig(train_set=train_set, test_set=test_set,
-    batch_size=64, model=MyModel(), optimiser_config=MyOptimiser(lr=0.1))
+    batch_size=64, model=MyModel(), optimiser_loader=MyOptimiser(lr=0.1))
 
 # configure the job
 j_config = JobConfig(job_type=JobMode.TRAIN, start_at=0, epochs=50,

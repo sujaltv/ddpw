@@ -218,8 +218,8 @@ class Job(object):
 
     Utils.print(
       f'[Device {global_rank}] Copying model parameters to the optimiser.')
-    if self.a_config.optimiser_config is not None:
-      self.a_config.optimiser = self.a_config.optimiser_config(
+    if self.a_config.optimiser_loader is not None:
+      self.a_config.optimiser = self.a_config.optimiser_loader(
         self.a_config.model)
 
     # if this task is resumption from or evaluation of a saved model, load it
