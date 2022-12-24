@@ -103,13 +103,16 @@ class Wrapper(object):
 
     Utils.print('Starting process(es).')
 
+    def finished():
+      if run.j_config.upon_finish is not None: run.j_config.upon_finish()
+
     if self.p_config.platform in [Platform.CPU, Platform.MPS]:
       init_process(0, 0, run, self.p_config, self.a_config)
-      Utils.print('CPU/MPS process finished.')
+      finished()
 
     elif self.p_config.platform == Platform.GPU:
       self.__gpu(run)
-      Utils.print('GPU processes finished.')
+      finished()
 
     elif self.p_config.platform == Platform.SLURM:
       def individual_gpu():
@@ -125,6 +128,8 @@ class Wrapper(object):
 
         init_process(job_env.global_rank, job_env.local_rank, run,
                      self.p_config, self.a_config)
+
+        if (job_env.global_rank == 0): finished()
 
       job = self.__slurm(individual_gpu, run.j_config.console_logs_path)
       Utils.print(f'SLURM job "{self.p_config.name}" scheduled; ' +

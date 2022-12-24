@@ -1,7 +1,7 @@
 import os
 import abc
 from enum import Enum
-from typing import final
+from typing import final, Optional, Callable
 from dataclasses import dataclass
 
 import torch
@@ -38,7 +38,7 @@ class JobConfig(object):
 
   Setting this to a negative value skips model/state restoration in case of
   testing or restoration. This is useful if there it no model to perform the
-  task on, `i.e.`, this is useful for running jobs that are to be done on the
+  task on, _i.e._, this is useful for running jobs that are to be done on the
   GPU that are not necessarily training or evaluating a model.
   """
 
@@ -61,6 +61,9 @@ class JobConfig(object):
 
   save_every: int = 5
   r"""Save a checkpoint every few epochs. If 0, ignored. Default: ``5``."""
+
+  upon_finish: Optional[Callable] = None
+  r"""A function to be called upon finishing the job. Default: ``None``."""
 
   def print(self):
     r"""
