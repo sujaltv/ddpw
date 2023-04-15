@@ -38,14 +38,12 @@ from src import MyDataset, MyModel, MyOptimiser, MyTrainer
 
 # datasets
 train_set = MyDataset(train=True)
-test_set = MyDataset(train=False)
 
 # configure the platform
 p_config = PlatformConfig(platform=Platform.GPU, n_gpus=4, cpus_per_task=2)
 
 # configure the artefacts (model, dataset, optimiser, etc.)
-a_config = ArtefactsConfig(train_set=train_set, test_set=test_set,
-    batch_size=64, model=MyModel(), optimiser_loader=MyOptimiser(lr=0.1))
+a_config = ArtefactsConfig(train_set=train_set, model=MyModel())
 
 # call the job
 Wrapper(p_config, a_config).start(MyTrainer())
