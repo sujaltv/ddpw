@@ -1,7 +1,6 @@
 import os
 
 import torch.multiprocessing as mp
-from submitit import AutoExecutor, JobEnvironment
 
 from .utils import Utils
 from .job import Job
@@ -62,19 +61,18 @@ class Wrapper(object):
 
     Utils.print('All processes complete.')
 
-  def __slurm(self, individual_gpu, console_logs_path: str = './logs'):
+  def __slurm(self, individual_gpu, console_logs: str):
     r"""
     Similar to :py:meth:`.__gpu` but for SLURM. An additional step includes
     spinning up a process for each node, done with ``submitit``.
 
     :param Job run: Custom training/evaluation task.
-    :param str console_logs_path: Location to save console logs. Default:
-        ``./logs``.
+    :param str console_logs: Location to save console logs.
     """
-
     Utils.print('Setting up the SLURM platform.')
+    from submitit import AutoExecutor
 
-    executor = AutoExecutor(folder=console_logs_path)
+    executor = AutoExecutor(folder=console_logs)
     executor.update_parameters(
       name=self.p_config.name,
       mem_gb=12*self.p_config.n_nodes,
@@ -99,12 +97,11 @@ class Wrapper(object):
     Utils.print('Setup details.')
     self.p_config.print()
     self.a_config.print()
-    run.j_config.print()
 
     Utils.print('Starting process(es).')
 
     def finished():
-      if run.j_config.upon_finish is not None: run.j_config.upon_finish()
+      if self.p_config.upon_finish is not None: self.p_config.upon_finish()
 
     if self.p_config.platform in [Platform.CPU, Platform.MPS]:
       init_process(0, 0, run, self.p_config, self.a_config)
@@ -119,6 +116,7 @@ class Wrapper(object):
         r"""
         This nested function is the starting point for each SLURM-based GPU.
         """
+        from submitit import JobEnvironment
 
         self.p_config.master_addr = os.environ['HOSTNAME']
         job_env = JobEnvironment()
@@ -131,7 +129,7 @@ class Wrapper(object):
 
         if (job_env.global_rank == 0): finished()
 
-      job = self.__slurm(individual_gpu, run.j_config.console_logs_path)
+      job = self.__slurm(individual_gpu, self.p_config.console_logs)
       Utils.print(f'SLURM job "{self.p_config.name}" scheduled; ' +
                   f'job ID: {job.job_id}.')
       Utils.print(f'See respective device logs for output on those devices.')

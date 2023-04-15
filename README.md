@@ -47,11 +47,6 @@ p_config = PlatformConfig(platform=Platform.GPU, n_gpus=4, cpus_per_task=2)
 a_config = ArtefactsConfig(train_set=train_set, test_set=test_set,
     batch_size=64, model=MyModel(), optimiser_loader=MyOptimiser(lr=0.1))
 
-# configure the job
-j_config = JobConfig(job_type=JobMode.TRAIN, start_at=0, epochs=50,
-    save_every=5)
-
 # call the job
-w = Wrapper(p_config, a_config)
-w.start(MyTrainer(j_config))
+Wrapper(p_config, a_config).start(MyTrainer())
 ```
