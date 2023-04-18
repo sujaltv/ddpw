@@ -6,10 +6,8 @@ from .platform import PlatformConfig
 
 class Job(object):
   r"""
-  This is a template class with abstract methods to be defined by the user. This
-  class provides methods to define training and evaluation procedures. Once the
-  wrapper has moved the model and the dataset to the appropriate device, it
-  calls :py:meth:`.train()` or :py:meth:`.evaluate()` as configured.
+  This is a template class which is to be defined and passed to
+  :py:meth:`ddpw.wrapper.Wrapper.start`.
   """
 
   p_config: PlatformConfig = None
@@ -46,9 +44,8 @@ class Job(object):
 
       This method needs to be explicitly defined.
 
-    When once the distributed data parallel setups are completed by the wrapper,
-    this method is called. This method locally updates the dataset and model
-    allotted for the current GPU in case of GPU- and SLURM-based platforms.
+    When once the distributed data parallel setup is completed by the wrapper,
+    this method is called.
 
     :param int global_rank: The global rank of the device.
     :param int local_rank: Local rank of the current device.

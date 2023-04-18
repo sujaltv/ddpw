@@ -5,7 +5,6 @@ from dataclasses import dataclass
 import torch.distributed as dist
 from .utils import Utils
 
-
 @final
 class Platform(Enum):
   r"""The platform on which to train or evaluate."""
@@ -37,7 +36,7 @@ class Platform(Enum):
       case 1: return Platform.GPU
       case 2: return Platform.SLURM
       case 3: return Platform.MPS
-      case _: raise ArgumentError("Undefined platform number given")
+      case _: raise ValueError("Undefined platform number given")
 
 
 @final
@@ -72,6 +71,12 @@ class PlatformConfig(object):
   n_gpus: int = 1
   r"""The total number of GPUs allotted in each node. Default: ``1``."""
 
+  mem_gb: int = 32
+  r"""Memory in GB (for SLURM). Default: ``32``."""
+
+  tasks_per_node: int = 2
+  r"""Number of tasks per node (for SLURM). Default: ``2``."""
+
   master_addr: str = 'localhost'
   r"""The IP address of the master GPU through which interprocess communication
   happens. Default: ``localhost``."""
@@ -103,7 +108,8 @@ class PlatformConfig(object):
     this is implicitly the number of GPUs allotted on each node multiplied by
     the total number of nodes. Default: ``1``."""
 
-    return self.n_nodes * self.n_gpus
+    return (self.n_nodes if self.platform == Platform.SLURM else 1) \
+      * self.n_gpus
 
   @property
   def requires_ipc(self):

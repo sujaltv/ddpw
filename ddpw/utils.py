@@ -58,7 +58,7 @@ class Utils(object):
     effectively the optimiser itself, to the specified device. This method has
     been taken as is from a `solution
     <https://discuss.pytorch.org/t/moving-optimizer-from-cpu-to-gpu/96068/3>`_
-    suggested on PyTorch's Discuss forum.
+    suggested on `PyTorch Discuss <https://discuss.pytorch.org>`_.
 
     :param torch.optim.Optimizer optimiser: The optimiser to move to a device.
     :param torch.device device: The device to which to move the optimiser.

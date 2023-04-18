@@ -75,9 +75,9 @@ class Wrapper(object):
     executor = AutoExecutor(folder=console_logs)
     executor.update_parameters(
       name=self.p_config.name,
-      mem_gb=12*self.p_config.n_nodes,
+      mem_gb=self.p_config.mem_gb,
       gpus_per_node=self.p_config.n_gpus,
-      tasks_per_node=self.p_config.n_gpus,
+      tasks_per_node=self.p_config.tasks_per_node,
       cpus_per_task=self.p_config.cpus_per_task,
       nodes=self.p_config.n_nodes,
       timeout_min=self.p_config.timeout_min,

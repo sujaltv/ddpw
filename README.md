@@ -33,18 +33,20 @@ from ddpw.platform import Platform, PlatformConfig
 from ddpw.artefacts import ArtefactsConfig
 from ddpw.job import JobConfig, JobMode
 from ddpw.wrapper import Wrapper
+from torchvision.datasets.mnist import MNIST
 
-from src import MyDataset, MyModel, MyOptimiser, MyTrainer
+from src import MyModel, MyTrainer
 
-# datasets
-train_set = MyDataset(train=True)
+# dataset
+train_set = MNIST(root='./data/MNSIT', train=True)
 
-# configure the platform
+# platform
 p_config = PlatformConfig(platform=Platform.GPU, n_gpus=4, cpus_per_task=2)
 
-# configure the artefacts (model, dataset, optimiser, etc.)
+# model and dataset
 a_config = ArtefactsConfig(train_set=train_set, model=MyModel())
 
 # call the job
-Wrapper(p_config, a_config).start(MyTrainer())
+wrapper = Wrapper(p_config, a_config)
+wrapper.start(MyTrainer())
 ```

@@ -2,29 +2,8 @@ Example with MNIST
 ##################
 .. _MNIST example:
 
-1. Custom dataset
-=================
 
-.. code-block:: python
-  :caption: src/dataset.py
-
-  from torchvision import transforms as T
-  from torchvision.datasets.mnist import MNIST
-
-
-  class MyDataset(MNIST):
-    def __init__(self, root: str, train: bool = True, download: bool = False):
-      transforms = T.Compose([
-        T.ToTensor(),
-        T.Resize((28,28)),
-        T.Normalize((0.1307,), (0.3081,))
-      ])
-
-      super(MyDataset, self).__init__(root, train, transforms,
-                                          download=download).__init__()
-
-
-2. Custom model
+1. Custom model
 ===============
 
 .. code-block:: python
@@ -66,7 +45,7 @@ Example with MNIST
       return F.log_softmax(x, 1)
 
 
-3. Custom job
+2. Custom job
 =================
 .. _MNIST custom job:
 

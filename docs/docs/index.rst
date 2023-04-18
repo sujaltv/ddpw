@@ -30,29 +30,31 @@ Example
 
 .. code-block:: python
     :linenos:
-    :emphasize-lines: 12,15,18
+    :emphasize-lines: 13,16,19,20
 
     from ddpw.platform import Platform, PlatformConfig
     from ddpw.artefacts import ArtefactsConfig
     from ddpw.job import JobConfig, JobMode
     from ddpw.wrapper import Wrapper
+    from torchvision.datasets.mnist import MNIST
 
-    from src import MyDataset, MyModel, MyTrainer
+    from src import MyModel, MyTrainer
 
-    # datasets
-    train_set = MyDataset(train=True)
+    # dataset
+    train_set = MNIST(root='./data/MNSIT', train=True)
 
-    # configure the platform
+    # platform
     p_config = PlatformConfig(platform=Platform.GPU, n_gpus=4, cpus_per_task=2)
 
-    # configure the artefacts (model, dataset, optimiser, etc.)
+    # model and dataset
     a_config = ArtefactsConfig(train_set=train_set, model=MyModel())
 
     # call the job
-    Wrapper(p_config, a_config).start(MyTrainer())
+    wrapper = Wrapper(p_config, a_config)
+    wrapper.start(MyTrainer())
 
-Refer to the :ref:`example with MNIST <MNIST example>` to see how ``MyDataset``,
-``MyModel``, and ``MyTrainer`` are implemented.
+Refer to the :ref:`example with MNIST <MNIST example>` to see how ``MyModel``
+and ``MyTrainer`` are implemented.
 
 .. toctree::
    :caption: Introduction
