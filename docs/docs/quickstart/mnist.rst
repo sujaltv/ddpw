@@ -4,7 +4,7 @@ Example with MNIST
 
 
 1. Custom model
-===============
+==============
 
 .. code-block:: python
   :caption: src/model.py

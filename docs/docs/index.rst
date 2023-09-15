@@ -36,6 +36,7 @@ Example
     from ddpw.artefacts import ArtefactsConfig
     from ddpw.job import JobConfig, JobMode
     from ddpw.wrapper import Wrapper
+
     from torchvision.datasets.mnist import MNIST
 
     from src import MyModel, MyTrainer
