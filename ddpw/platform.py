@@ -96,6 +96,9 @@ class PlatformConfig(object):
   r"""Minimum timeout (in minutes) for SLURM-based jobs. Used only on SLURM
   platforms. Default: ``2880`` (two days)."""
 
+  console_logs: str = './logs'
+  r"""Location of console logs (used by SLURM). Default: `./logs`"""
+
   cpus_per_task: int = 1
   r"""Number of CPUs per task. Default: ``1``."""
 
