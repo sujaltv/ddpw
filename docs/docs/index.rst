@@ -99,3 +99,4 @@ and ``MyTrainer`` are implemented.
    :titlesonly:
 
    LICENCE
+

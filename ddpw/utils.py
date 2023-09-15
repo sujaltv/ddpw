@@ -76,3 +76,4 @@ class Utils(object):
             subparam.data = subparam.data.to(device)
             if subparam._grad is not None:
               subparam._grad.data = subparam._grad.data.to(device)
+

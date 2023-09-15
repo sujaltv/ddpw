@@ -142,3 +142,4 @@ class PlatformConfig(object):
       Utils.print(f' • Master IP address:                   {self.master_addr}')
       Utils.print(f' • Master port:                         {self.master_port}')
     Utils.print(f' • World size:                          {self.world_size}')
+

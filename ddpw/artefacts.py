@@ -45,3 +45,4 @@ class ArtefactsConfig(object):
                 f'{len(self.test_set) if self.test_set is not None else 0}')
     Utils.print(' • Model has batch normalisation?       ' +
                 f'{"Yes" if self.model_has_batch_norm else "No"}')
+

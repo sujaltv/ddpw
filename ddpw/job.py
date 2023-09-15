@@ -44,8 +44,9 @@ class Job(object):
 
       This method needs to be explicitly defined.
 
-    When once the distributed data parallel setup is completed by the wrapper,
-    this method is called.
+    When once the distributed data parallel setups are completed by the wrapper,
+    this method is called. This method locally updates the dataset and model
+    allotted for the current GPU in case of GPU- and SLURM-based platforms.
 
     :param int global_rank: The global rank of the device.
     :param int local_rank: Local rank of the current device.
@@ -53,3 +54,4 @@ class Job(object):
     """
 
     raise NotImplementedError
+

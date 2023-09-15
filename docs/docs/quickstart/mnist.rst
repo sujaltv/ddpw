@@ -100,3 +100,4 @@ Example with MNIST
         if global_rank == 0:
           # code for storing logs and saving state
           pass
+
