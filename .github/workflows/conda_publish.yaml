@@ -1,3 +1,4 @@
+---
 name: Publish to Anaconda
 
 on:
@@ -18,3 +19,4 @@ jobs:
         subdir: 'conda'
         anacondatoken: ${{ secrets.ANACONDA_TOKEN }}
         platforms: 'noarch'
+...
