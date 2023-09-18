@@ -1,3 +1,4 @@
+---
 name: Publish to Anaconda
 
 on:
@@ -8,9 +9,21 @@ on:
 
 jobs:
   publish:
+    name: Build and publish to Anaconda
     runs-on: ubuntu-latest
-    name: Conda Publish
+
     steps:
+<<<<<<< HEAD
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Publish to Anaconda
+        uses: fcakyon/conda-publish-action@v1.3
+        with:
+          subdir: 'conda'
+          anacondatoken: ${{ secrets.ANACONDA_TOKEN }}
+          platforms: 'noarch'
+=======
     - uses: actions/checkout@v2
     - name: Publish to Anaconda
       uses: fcakyon/conda-publish-action@v1.3
@@ -18,3 +31,5 @@ jobs:
         subdir: 'conda'
         anacondatoken: ${{ secrets.ANACONDA_TOKEN }}
         platforms: 'noarch'
+>>>>>>> 70d8405151455b81b1f372f7a78fa44f5fd7e38e
+...

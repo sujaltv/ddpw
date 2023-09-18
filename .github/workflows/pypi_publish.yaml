@@ -1,3 +1,4 @@
+---
 name: Publish to PyPI
 
 on:
@@ -8,18 +9,33 @@ on:
 
 jobs:
   deploy:
-
+    name: Build and publish to PyPI
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.10
 
+<<<<<<< HEAD
+      - name: Instal dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build
+
+      - name: Build package
+        run: python -m build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+        with:
+          user: __token__
+          passwork: ${{ secrets.PYPI_API_TOKEN }}
+=======
     - name: Instal dependencies
       run: |
         python -m pip install --upgrade pip
@@ -31,3 +47,5 @@ jobs:
       run: |
         python setup.py sdist bdist_wheel
         twine upload dist/*
+>>>>>>> 70d8405151455b81b1f372f7a78fa44f5fd7e38e
+...

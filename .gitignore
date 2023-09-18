@@ -1,15 +1,7 @@
 __pycache__
-.DS_Store
-.vscode
-**.egg-info
-
 build
-data
-runs
-models
-
-test
-
-**.err
-**.out
-outputs
+<<<<<<< HEAD
+dist
+**.egg-info
+=======
+>>>>>>> 70d8405151455b81b1f372f7a78fa44f5fd7e38e
