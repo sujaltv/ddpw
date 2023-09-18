@@ -1,5 +1,7 @@
 fluiddyn
 furo
+realpython-reader
 sphinx
 sphinx-copybutton
 sphinxcontrib-bibtex
+twine

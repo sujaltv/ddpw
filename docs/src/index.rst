@@ -4,8 +4,8 @@ DDPW
 **Distributed Data Parallel Wrapper (DDPW)** is a lightweight PyTorch-based
 wrapper that makes it easy to run taks on various compute platforms. DDPW
 handles scaffolding tasks like creating threads on GPUs/nodes, setting up
-inter-process communication, `etc.`, and provides basic methods to move modules
-and devices get dataset samplers to devices, allowing the user to focus on the
+inter-process communication, `etc.`, and provides minimal methods to move
+modules to devices and get dataset samplers, allowing the user to focus on the
 main aspects of the task.
 
 This wrapper offers setups for different compute platforms including:

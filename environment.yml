@@ -1,12 +1,10 @@
 name: ddpw
 channels:
-  - anaconda
   - pytorch
   - conda-forge
   - defaults
 dependencies:
-  - anaconda-client
-  - submitit
   - python==3.10
-  - pytorch
   - numpy
+  - pytorch
+  - submitit
