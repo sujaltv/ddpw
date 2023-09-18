@@ -1,12 +1,13 @@
 # DDPW
+conda install pytorch -c pytorch
 
 [![AWS S3](https://img.shields.io/badge/documentation-sphinx-blue?link=https://ddpw.projects.sujal.tv)](https://ddpw.projects.sujal.tv)
 [![Conda](https://img.shields.io/conda/v/tvsujal/ddpw)](https://anaconda.org/tvsujal/ddpw)
 [![PyPI](https://img.shields.io/pypi/v/ddpw)](https://pypi.org/project/ddpw/)
 
-[![Publish documentation to AWS S3](https://github.com/sujaltv/ddpw/actions/workflows/s3_publish.yaml/badge.svg)](https://github.com/sujaltv/ddpw/actions/workflows/s3_publish.yaml)
-[![Publish to Anaconda](https://github.com/sujaltv/ddpw/actions/workflows/conda_publish.yaml/badge.svg)](https://github.com/sujaltv/ddpw/actions/workflows/conda_publish.yaml)
-[![Publish to PyPI](https://github.com/sujaltv/ddpw/actions/workflows/pypi_publish.yaml/badge.svg)](https://github.com/sujaltv/ddpw/actions/workflows/pypi_publish.yaml)
+[![Publish documentation to AWS S3](https://github.com/sujaltv/ddpw/actions/workflows/s3_publish.yml/badge.svg)](https://github.com/sujaltv/ddpw/actions/workflows/s3_publish.yml)
+[![Publish to Anaconda](https://github.com/sujaltv/ddpw/actions/workflows/conda_publish.yml/badge.svg)](https://github.com/sujaltv/ddpw/actions/workflows/conda_publish.yml)
+[![Publish to PyPI](https://github.com/sujaltv/ddpw/actions/workflows/pypi_publish.yml/badge.svg)](https://github.com/sujaltv/ddpw/actions/workflows/pypi_publish.yml)
 
 ---
 
