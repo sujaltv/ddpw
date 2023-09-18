@@ -1,5 +1,6 @@
 name: ddpw
 channels:
+  - anaconda
   - pytorch
   - conda-forge
   - defaults
