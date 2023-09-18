@@ -1,15 +1,12 @@
-name: base
+name: ddpw
 channels:
   - anaconda
   - pytorch
   - conda-forge
   - defaults
 dependencies:
-  - sphinx
   - anaconda-client
   - submitit
-  - numpy
   - python==3.10
   - pytorch
-  - conda-build
-  - wheel
+  - numpy
