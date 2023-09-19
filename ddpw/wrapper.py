@@ -26,9 +26,12 @@ def setup(global_rank: int, local_rank: int, platform: Platform,
 
     if platform.requires_ipc:
         os.environ['MASTER_ADDR'] = platform.master_addr
-        os.environ['MASTER_PORT'] = str(platform.master_port)
+        port = os.environ['MASTER_PORT'] = str(platform.master_port)
 
-        im = f'tcp://{os.environ["MASTER_ADDR"]}:{os.environ["MASTER_PORT"]}'
+
+        im = f'{platform.ipc_protocol}://{os.environ["MASTER_ADDR"]}'
+        if port is not None: im = f'{im}:{os.environ["MASTER_PORT"]}'
+
         Utils.print(f'[Device {global_rank}] IPC at {im}.')
 
         dist.init_process_group(backend=platform.backend, init_method=im,
@@ -39,10 +42,7 @@ def setup(global_rank: int, local_rank: int, platform: Platform,
     DF.seed_generators(platform.seed)
 
     # 2. Wait for all processes to synchronise and then start the task
-    if platform.requires_ipc:
-        msg = f'[Device {global_rank}] Training model on device {local_rank}.'
-        Utils.print(msg)
-        dist.barrier()
+    if platform.requires_ipc: dist.barrier()
 
     # 3. Call the task
     Utils.print(f'[Device {global_rank}] All setup finished.')

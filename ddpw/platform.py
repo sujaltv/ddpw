@@ -77,6 +77,9 @@ class Platform:
     r"""This property corresponds to that passed to
     :meth:`mp.set_start_method`. Default: ``fork``."""
 
+    ipc_protocol: str = 'tcp'
+    r"""IPC protocol. Accepted values: ``tcp`` and ``file``."""
+
     master_addr: str = 'localhost'
     r"""IPC address. Default: ``localhost``."""
 
