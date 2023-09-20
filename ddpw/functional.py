@@ -14,9 +14,9 @@ from .platform import Device, Platform
 
 def seed_generators(seed: int):
     r"""
-    Seed random number generators from various packages.
+    This function seed (pseudo)random number generators from various packages.
 
-    :param int seed: The seed to initialise.
+    :param int seed: The seed.
     """
 
     random.seed(seed)
@@ -25,14 +25,14 @@ def seed_generators(seed: int):
     torch.cuda.manual_seed_all(seed)
 
 
-def average_params_grads(model: torch.nn.Module, params: bool = False,
+def average_params_grads(module: torch.nn.Module, params: bool = False,
                          grads: bool = True):
     r"""
-    Given a model, this function averages the parameters and/or their gradients
-    of the model across all the GPUs in the world. Copied and modified from
-    `PyTorch Blog <https://pytorch.org/tutorials/intermediate/dist_tuto.html>`_.
+    Given a module, this function averages the parameters and/or their gradients
+    of the model across all the GPUs. (Copied and modified from
+    `PyTorch Blog <https://pytorch.org/tutorials/intermediate/dist_tuto.html>`_)
 
-    :param nn.Module model: The model whose parameters/gradients are to be
+    :param nn.Module module: The module whose parameters/gradients are to be
         averaged.
     :param bool params: Whether to average the parameters or not. Default:
         ``False``.
@@ -44,7 +44,7 @@ def average_params_grads(model: torch.nn.Module, params: bool = False,
 
     world_size = float(dist.get_world_size())
 
-    for p in model.parameters():
+    for p in module.parameters():
         if p.grad is not None and grads:
             dist.all_reduce(p.grad, op=dist.ReduceOp.SUM)
             p.grad /= world_size
@@ -56,13 +56,11 @@ def average_params_grads(model: torch.nn.Module, params: bool = False,
 def optimiser_to(optimiser: torch.optim.Optimizer, device: torch.device):
     r"""
     This function offers a simple way to move all parameters of an optimiser
-    or, effectively the optimiser itself, to the specified device. This
-    function has been taken as is from a `solution
+    to the specified device. This function has been taken as is from a `solution
     <https://discuss.pytorch.org/t/moving-optimizer-from-cpu-to-gpu/96068/3>`_
-    suggested on `PyTorch Discuss <https://discuss.pytorch.org>`_.
+    on `PyTorch Discuss <https://discuss.pytorch.org>`_.
 
-    :param torch.optim.Optimizer optimiser: The optimiser to move to a
-        device.
+    :param torch.optim.Optimizer optimiser: The optimiser to move to a device.
     :param torch.device device: The device to which to move the optimiser.
     """
 
@@ -104,19 +102,20 @@ def to(module: torch.nn.Module, local_rank: int, sync_modules: bool = True,
        device: Device = Device.GPU) -> nn.Module:
     r"""
     A quick and minimal function that works on all devices to move the given
-    module to the specified device: CPU or GPU. If the platform is set up in
-    an IPC fashion, this function moves the module in a distributed data
-    parallel-fashion and synchronises batch normalisation layers, if any.
+    module to the specified device: CPU, GPU, or MPS. If the platform is set up
+    in an IPC fashion, this function optionally moves the module in a
+    distributed data parallel-fashion and synchronises batch normalisation
+    layers, if any.
 
     :param torch.nn.Module module: The module to be moved.
     :param int local_rank: The local rank of the device.
     :param bool sync_modules: Whether to synchronise the modules across devices
-        or not. If yes, the module becomes DistributedDataParallel.  Default:
+        or not. If yes, the module becomes ``DistributedDataParallel``. Default:
         ``True``.
     :param Device device: The type of device to which to move the module. This
-        argument is useful because this function can be called regardless of the
-        device and thus helps avoid additional checks by device before calling
-        this function. Default: ``Device.GPU``.
+        argument is useful because once ``device`` has been globally set, this
+        function can be called regardless of the device and thus helps avoid
+        additional checks. Default: ``Device.GPU``.
 
     :returns torch.nn.Module: The module moved to the appropriate device.
     """
@@ -142,8 +141,7 @@ def get_dataset_sampler(dataset: Dataset, global_rank: int,
                         platform: Platform) -> Optional[DistributedSampler]:
     r"""
     This function selects a portion of the original dataset shared by other
-    devices. If the device being trained on is a CPU, no sharing is
-    necessary.
+    devices. If the device is CPU or MPS, no sharing is necessary.
 
     :param data.Dataset dataset: The dataset from which to sample for the
         current device.
@@ -151,7 +149,7 @@ def get_dataset_sampler(dataset: Dataset, global_rank: int,
     :param Platform platform: Platform-related configurations.
 
     :returns DistributedSampler: Dataset sampler for the given dataset and
-        world.
+        world size.
     """
 
     sampler = None
@@ -163,16 +161,27 @@ def get_dataset_sampler(dataset: Dataset, global_rank: int,
     return sampler
 
  
-def device(model: torch.nn.Module) -> torch.device:
+def device(module: torch.nn.Module) -> torch.device:
     r"""
     Given a module, this function returns the device on which it currently
-    resides.
+    resides. If the module has no parameters, the current device is returned by
+    default.
 
-    :param nn.Module model: The model whose device is sought.
+    :param nn.Module module: The module whose device is sought.
 
     :returns torch.device: The device of the module.
     """
 
-    p = model.parameters()
-    return next(p).device
+    p = module.parameters()
+    try:
+        device = next(p).device
+    except StopIteration:
+        if torch.cuda.is_available():
+            device = torch.device(f'cuda:{torch.cuda.current_device()}')
+        elif torch.backends.mps.is_available():
+            device = torch.device('mps')
+        else:
+            device = torch.device('cpu')
+
+    return device
 

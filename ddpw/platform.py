@@ -8,7 +8,7 @@ from torch import distributed as dist
 
 @final
 class Device(Enum):
-    r"""The device on which to train or evaluate."""
+    r"""The device on which to run the task."""
 
     CPU = 'cpu'
     r"""The device to run on is a CPU."""
@@ -78,7 +78,8 @@ class Platform:
     :meth:`mp.set_start_method`. Default: ``fork``."""
 
     ipc_protocol: str = 'tcp'
-    r"""IPC protocol. Accepted values: ``tcp`` and ``file``."""
+    r"""IPC protocol. Accepted values: ``tcp`` and ``file``. Default:
+    ``tcp``."""
 
     master_addr: str = 'localhost'
     r"""IPC address. Default: ``localhost``."""

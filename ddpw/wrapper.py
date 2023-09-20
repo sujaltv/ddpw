@@ -55,9 +55,9 @@ def setup(global_rank: int, local_rank: int, platform: Platform,
 
 class Wrapper:
     r"""
-    This class bootstraps the device setup for CPU, GPU, or a SLURM-based
+    This class bootstraps the device setup for CPU, GPU, MPS, or a SLURM-based
     cluster of GPU nodes. Once platform-specific configurations are specified,
-    the given task will be started.
+    the given task can be started.
 
     :param Platform platform: Platform-related configurations.
     """
@@ -133,7 +133,7 @@ class Wrapper:
     def start(self, target: Callable[[int, int], Any]):
         r"""
         This method begins the setup process for CPU/GPU/SLURM-based jobs and
-        commences the task.
+        then commences the task.
 
         :param Callable[[int, int], Any] target: The task. A callable which
             accepts two integers: the global and the local rank of the device.
