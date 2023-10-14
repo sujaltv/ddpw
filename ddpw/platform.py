@@ -5,6 +5,8 @@ from dataclasses import dataclass
 
 from torch import distributed as dist
 
+from .utils import Utils
+
 
 @final
 class Device(Enum):
@@ -165,5 +167,5 @@ class Platform:
         \r • World size:\t\t\t\t{self.world_size}
         """
 
-        print(details)
+        Utils.print(details)
 

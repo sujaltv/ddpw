@@ -83,7 +83,6 @@ class Wrapper:
         
         :param Callable target: The function to call on each GPU upon setup.
         """
-        from submitit import JobEnvironment
 
         if self.platform.world_size == 1:
             Utils.print('[Device 0] Task starting on GPU.')
