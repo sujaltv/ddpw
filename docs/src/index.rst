@@ -2,11 +2,11 @@ DDPW
 ####
 
 **Distributed Data Parallel Wrapper (DDPW)** is a lightweight PyTorch-based
-wrapper that makes it easy to run taks on various compute platforms. DDPW
+wrapper that makes it easy to run tasks on various compute platforms. DDPW
 handles scaffolding tasks like creating threads on GPUs/nodes, setting up
-inter-process communication, `etc.`, and provides minimal methods to move
-modules to devices and get dataset samplers, allowing the user to focus on the
-main aspects of the task.
+inter-process communication, `etc.`, and provides simple, default utility
+methods to move modules to devices and get dataset samplers, allowing the user
+to focus on the main aspects of the task.
 
 This wrapper offers setups for different compute platforms including:
 
@@ -24,8 +24,8 @@ Example
     from ddpw import Platform, Wrapper
 
     # some job
-    def run(global_rank, local_rank):
-        print(f'This is node {global_rank}, device {local_rank}') 
+    def run(global_rank, local_rank, args):
+        print(f'This is node {global_rank}, device {local_rank}; args = {args}') 
 
     # platform (e.g., 4 GPUs)
     platform = Platform(device='gpu', n_gpus=4)
@@ -34,7 +34,7 @@ Example
     wrapper = Wrapper(platform=platform)
 
     # start
-    wrapper.start(run)
+    wrapper.start(run, (0, 'example', [0.1, 0.2], {'a': 0}))
 
 Refer to the :ref:`example with MNIST <MNIST example>` for a more detailed
 example.

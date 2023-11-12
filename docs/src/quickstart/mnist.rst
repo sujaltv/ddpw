@@ -76,7 +76,7 @@ Example with MNIST
     from torch import distributed as dist
     from torch.nn import functional as F
 
-    from .ddpw import functional as DF
+    from ddpw import functional as DF
     from torch.utils.data import DataLoader
 
 

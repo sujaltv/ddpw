@@ -3,12 +3,15 @@ from random import randint
 from typing import final, Optional, Callable, Union
 from dataclasses import dataclass
 
+import torch
 from torch import distributed as dist
+
+from .utils import Utils
 
 
 @final
 class Device(Enum):
-    r"""The device on which to train or evaluate."""
+    r"""The device on which to run the task."""
 
     CPU = 'cpu'
     r"""The device to run on is a CPU."""
@@ -77,6 +80,10 @@ class Platform:
     r"""This property corresponds to that passed to
     :meth:`mp.set_start_method`. Default: ``fork``."""
 
+    ipc_protocol: str = 'tcp'
+    r"""IPC protocol. Accepted values: ``tcp`` and ``file``. Default:
+    ``tcp``."""
+
     master_addr: str = 'localhost'
     r"""IPC address. Default: ``localhost``."""
 
@@ -115,16 +122,22 @@ class Platform:
         r"""World size. This is the total number of GPUs across all nodes.
         Default: ``1``."""
 
-        return (self.n_nodes if self.device == Device.SLURM else 1) \
-                * self.n_gpus
+        n_nodes = self.n_nodes if self.device == Device.SLURM else 1 
+        n_gpus = min(self.n_gpus, torch.cuda.device_count()) if self.device == Device.GPU else self.n_gpus
+
+        return n_nodes * n_gpus
 
     @property
     def requires_ipc(self):
-        r"""Needs communication. This property says whether or not the setup
-        requires IPC. IPC is not required for a single device."""
+        r"""Needs communication. This property determines whether or not the
+        setup requires IPC. IPC is not required for a single device."""
 
-        return self.device not in [Device.CPU, Device.MPS] \
-                and self.world_size > 1
+        if self.device in [Device.CPU, Device.MPS]: return False
+
+        if self.device == Device.GPU:
+            return torch.cuda.device_count() > 1 and self.world_size > 1
+
+        return self.world_size > 1
 
     def print(self):
         r"""
@@ -138,7 +151,8 @@ class Platform:
         \r • Device:\t\t\t\t{self.device.value.upper()}
         \r • CPUs (per thread):\t\t\t{self.n_cpus}
         \r • RAM (per CPU):\t\t\t{self.ram}GB
-        \r • GPUs (per node):\t\t\t{self.n_gpus}
+        \r • GPUs (per node):\t\t\t{self.n_gpus} (requested)
+        \r • GPUs (per node):\t\t\t{torch.cuda.device_count()} (available)
         \r • PyTorch backend:\t\t\t{self.backend}
         \r • Seed (random number generators):\t{self.seed}
         """
@@ -161,5 +175,5 @@ class Platform:
         \r • World size:\t\t\t\t{self.world_size}
         """
 
-        print(details)
+        Utils.print(details)
 
