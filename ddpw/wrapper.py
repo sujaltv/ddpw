@@ -1,6 +1,7 @@
 import os
-from typing import Any, Callable
+from typing import Any, Callable, Optional, Tuple
 
+import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
 
@@ -10,16 +11,19 @@ from . import functional as DF
 
 
 def setup(global_rank: int, local_rank: int, platform: Platform,
-          target: Callable[[int, int], Any]) :
+          target: Callable[[int, int, Optional[Tuple]], Any],
+          args: Optional[Tuple]) :
     r"""
     This function is called at the beginning of the process in each device
-    (CPU/GPU). Depending on the needs, this function establishes DDP communication
-    protocols, seeds random number generators, and starts the given task.
+    (CPU/GPU). Depending on the needs, this function establishes DDP
+    communication protocols, seeds random number generators, and invokes the
+    given task.
 
     :param int global_rank: Global rank of the device.
     :param int local_rank: Local rank of the device.
     :param Platform platform: Platform-related configurations.
     :param Callable target: The function to call upon setup.
+    :param Optional[Tuple] args: Arguments to be passed to ``target``.
     """
 
     Utils.print(f'[Device {global_rank}] Initialising the process.')
@@ -38,15 +42,16 @@ def setup(global_rank: int, local_rank: int, platform: Platform,
                             rank=global_rank, world_size=platform.world_size)
 
     # 1. Seed random number generators
-    Utils.print(f'[Device {global_rank}] Seeding random number generators.')
+    Utils.print(f'[Device {global_rank}] ' +
+                f'Seeding random number generators with {platform.seed}.')
     DF.seed_generators(platform.seed)
 
     # 2. Wait for all processes to synchronise and then start the task
     if platform.requires_ipc: dist.barrier()
 
-    # 3. Call the task
+    # 3. Invoke the given task
     Utils.print(f'[Device {global_rank}] All setup finished.')
-    target(global_rank, local_rank)
+    target(global_rank, local_rank, args)
 
     # 4. Cleanup
     if platform.requires_ipc: dist.destroy_process_group()
@@ -75,27 +80,29 @@ class Wrapper:
                 Utils.print(
                   f'Warning: {e}. Skipping setting the start method for forks.')
 
-    def __gpu(self, target: Callable[[int, int], Any]):
+    def __gpu(self, target: Callable[[int, int, Optional[Tuple]], Any],
+              args: Optional[Tuple]):
         r"""
         This method spins up a process for each GPU in the world. It assigns the
         task to be run on each process, `viz.`, distributing the datasets and
         models and commencing the task.
         
         :param Callable target: The function to call on each GPU upon setup.
+        :param Optional[Tuple] args: Arguments to be passed to ``target``.
         """
 
         if self.platform.world_size == 1:
             Utils.print('[Device 0] Task starting on GPU.')
-            setup(0, 0, self.platform, target)
+            setup(0, 0, self.platform, target, args)
             return
 
         Utils.print(f'Spawning {self.platform.world_size} processes.')
         processes = []
 
         # create a process for each GPU in the world
-        for global_rank in range(self.platform.world_size):
-            p = mp.Process(target=setup, args=(global_rank, global_rank,
-                                                      self.platform, target))
+        for local_rank in range(self.platform.world_size):
+            p = mp.Process(target=setup, args=(0, local_rank, self.platform,
+                                               target, args))
             processes.append(p)
             p.start()
 
@@ -129,13 +136,18 @@ class Wrapper:
 
         return executor.submit(target)
 
-    def start(self, target: Callable[[int, int], Any]):
+    def start(self, target: Callable[[int, int, Optional[Tuple]], Any],
+              args: Optional[Tuple] = None):
         r"""
         This method begins the setup process for CPU/GPU/SLURM-based jobs and
         then commences the task.
 
-        :param Callable[[int, int], Any] target: The task. A callable which
-            accepts two integers: the global and the local rank of the device.
+        :param Callable[[int, int, Optional[Tuple]], Any] target: The task. A
+            callable which accepts two integers (the global and the local rank
+            of the device) and an optional tuple which are the callable's
+            arguments.
+        :param Optional[Tuple] args: Arguments to be passed to ``target``.
+            Default: ``None``.
         """
 
         self.platform.print()
@@ -148,10 +160,10 @@ class Wrapper:
 
         match self.platform.device:
             case Device.CPU | Device.MPS:
-                setup(0, 0, self.platform, target)
+                setup(0, 0, self.platform, target, args)
                 finished()
             case Device.GPU:
-                self.__gpu(target)
+                self.__gpu(target, args)
                 finished()
             case Device.SLURM:
                 def individual_gpu():
@@ -172,7 +184,7 @@ class Wrapper:
                     Utils.print(details)
 
                     setup(job_env.global_rank, job_env.local_rank,
-                                 self.platform, target)
+                                 self.platform, target, args)
 
                     if job_env.global_rank == 0: finished()
 
