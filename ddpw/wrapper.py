@@ -1,7 +1,7 @@
 import os
+from os.path import isabs
 from typing import Any, Callable, Optional, Tuple
 
-import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
 
@@ -10,7 +10,7 @@ from .utils import Utils
 from . import functional as DF
 
 
-def setup(global_rank: int, local_rank: int, platform: Platform,
+def setup(node: int, global_rank: int, local_rank: int, platform: Platform,
           target: Callable[[int, int, Optional[Tuple]], Any],
           args: Optional[Tuple]) :
     r"""
@@ -19,6 +19,7 @@ def setup(global_rank: int, local_rank: int, platform: Platform,
     communication protocols, seeds random number generators, and invokes the
     given task.
 
+    :param int node: Node number.
     :param int global_rank: Global rank of the device.
     :param int local_rank: Local rank of the device.
     :param Platform platform: Platform-related configurations.
@@ -26,7 +27,9 @@ def setup(global_rank: int, local_rank: int, platform: Platform,
     :param Optional[Tuple] args: Arguments to be passed to ``target``.
     """
 
-    Utils.print(f'[Device {global_rank}] Initialising the process.')
+    node_info = f'Node {node}, GPU {global_rank}(G)/{local_rank}(L)'
+
+    Utils.print(f'[{node_info}] Initialising the process.')
 
     if platform.requires_ipc:
         os.environ['MASTER_ADDR'] = platform.master_addr
@@ -36,13 +39,13 @@ def setup(global_rank: int, local_rank: int, platform: Platform,
         im = f'{platform.ipc_protocol}://{os.environ["MASTER_ADDR"]}'
         if port is not None: im = f'{im}:{os.environ["MASTER_PORT"]}'
 
-        Utils.print(f'[Device {global_rank}] IPC at {im}.')
+        Utils.print(f'[{node_info}] IPC at {im}.')
 
         dist.init_process_group(backend=platform.backend, init_method=im,
                             rank=global_rank, world_size=platform.world_size)
 
     # 1. Seed random number generators
-    Utils.print(f'[Device {global_rank}] ' +
+    Utils.print(f'[{node_info}] ' +
                 f'Seeding random number generators with {platform.seed}.')
     DF.seed_generators(platform.seed)
 
@@ -50,12 +53,12 @@ def setup(global_rank: int, local_rank: int, platform: Platform,
     if platform.requires_ipc: dist.barrier()
 
     # 3. Invoke the given task
-    Utils.print(f'[Device {global_rank}] All setup finished.')
+    Utils.print(f'[{node_info}] All setup finished.')
     target(global_rank, local_rank, args)
 
     # 4. Cleanup
     if platform.requires_ipc: dist.destroy_process_group()
-    Utils.print(f'[Device {global_rank}] Tasks on device complete.')
+    Utils.print(f'[{node_info}] Tasks on device complete.')
  
 
 class Wrapper:
@@ -92,16 +95,17 @@ class Wrapper:
         """
 
         if self.platform.world_size == 1:
-            Utils.print('[Device 0] Task starting on GPU.')
-            setup(0, 0, self.platform, target, args)
+            node_info = f'Node 0, GPU 0(G)/0(L)'
+            Utils.print(f'[{node_info}] Task starting on GPU.')
+            setup(0, 0, 0, self.platform, target, args)
             return
 
         Utils.print(f'Spawning {self.platform.world_size} processes.')
         processes = []
 
         # create a process for each GPU in the world
-        for local_rank in range(self.platform.world_size):
-            p = mp.Process(target=setup, args=(0, local_rank, self.platform,
+        for rank in range(self.platform.world_size):
+            p = mp.Process(target=setup, args=(0, rank, rank, self.platform,
                                                target, args))
             processes.append(p)
             p.start()
@@ -160,7 +164,7 @@ class Wrapper:
 
         match self.platform.device:
             case Device.CPU | Device.MPS:
-                setup(0, 0, self.platform, target, args)
+                setup(0, 0, 0, self.platform, target, args)
                 finished()
             case Device.GPU:
                 self.__gpu(target, args)
@@ -183,17 +187,20 @@ class Wrapper:
                     """
                     Utils.print(details)
 
-                    setup(job_env.global_rank, job_env.local_rank,
-                                 self.platform, target, args)
+                    setup(job_env.node, job_env.global_rank, job_env.local_rank,
+                          self.platform, target, args)
 
                     if job_env.global_rank == 0: finished()
 
                 job = self.__slurm(individual_gpu, self.platform.console_logs)
 
+                p = self.platform.console_logs
+                if not os.path.isabs(p):
+                    p = os.path.abspath(os.path.expanduser(p))
                 details = f"""
-                \r SLURM job "{self.platform.name}" scheduled;\
-                \r job ID: {job.job_id}.
-                \r See respective device logs for output on those devices.
+                \rSLURM job "{self.platform.name}" ({job.job_id}) scheduled.
+                \rSee respective device logs for output on those devices.
+                \rLogs saved at {p}.
                 """
 
                 print(details)

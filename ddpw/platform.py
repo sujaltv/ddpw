@@ -122,8 +122,10 @@ class Platform:
         r"""World size. This is the total number of GPUs across all nodes.
         Default: ``1``."""
 
-        return (self.n_nodes if self.device == Device.SLURM else 1) \
-                * (min(self.n_cpus,torch.cuda.device_count()) if self.device == Device.GPU else self.n_gpus)
+        n_nodes = self.n_nodes if self.device == Device.SLURM else 1 
+        n_gpus = min(self.n_gpus, torch.cuda.device_count()) if self.device == Device.GPU else self.n_gpus
+
+        return n_nodes * n_gpus
 
     @property
     def requires_ipc(self):
