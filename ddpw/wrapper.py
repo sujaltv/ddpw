@@ -1,5 +1,4 @@
 import os
-from os.path import isabs
 from typing import Any, Callable, Optional, Tuple
 
 import torch.distributed as dist
@@ -16,14 +15,14 @@ def setup(node: int, global_rank: int, local_rank: int, platform: Platform,
     r"""
     This function is called at the beginning of the process in each device
     (CPU/GPU). Depending on the needs, this function establishes DDP
-    communication protocols, seeds random number generators, and invokes the
-    given task.
+    communication protocols, seeds random number generators, invokes the given
+    task, and performs cleanup tasks.
 
     :param int node: Node number.
     :param int global_rank: Global rank of the device.
     :param int local_rank: Local rank of the device.
     :param Platform platform: Platform-related configurations.
-    :param Callable target: The function to call upon setup.
+    :param Callable target: The callable task to invoke upon finishing setup.
     :param Optional[Tuple] args: Arguments to be passed to ``target``.
     """
 
@@ -34,7 +33,6 @@ def setup(node: int, global_rank: int, local_rank: int, platform: Platform,
     if platform.requires_ipc:
         os.environ['MASTER_ADDR'] = platform.master_addr
         port = os.environ['MASTER_PORT'] = str(platform.master_port)
-
 
         im = f'{platform.ipc_protocol}://{os.environ["MASTER_ADDR"]}'
         if port is not None: im = f'{im}:{os.environ["MASTER_PORT"]}'
@@ -49,7 +47,7 @@ def setup(node: int, global_rank: int, local_rank: int, platform: Platform,
                 f'Seeding random number generators with {platform.seed}.')
     DF.seed_generators(platform.seed)
 
-    # 2. Wait for all processes to synchronise and then start the task
+    # 2. Wait for all the processes to synchronise and then start the task
     if platform.requires_ipc: dist.barrier()
 
     # 3. Invoke the given task
@@ -64,8 +62,8 @@ def setup(node: int, global_rank: int, local_rank: int, platform: Platform,
 class Wrapper:
     r"""
     This class bootstraps the device setup for CPU, GPU, MPS, or a SLURM-based
-    cluster of GPU nodes. Once platform-specific configurations are specified,
-    the given task can be started.
+    cluster of GPU nodes. Once platform-specific configurations are set up, the
+    given task will be started.
 
     :param Platform platform: Platform-related configurations.
     """
@@ -143,13 +141,14 @@ class Wrapper:
     def start(self, target: Callable[[int, int, Optional[Tuple]], Any],
               args: Optional[Tuple] = None):
         r"""
-        This method begins the setup process for CPU/GPU/SLURM-based jobs and
-        then commences the task.
+        This method performs the necessary setup for the CPU/GPU/SLURM task and
+        then invokes the task.
 
         :param Callable[[int, int, Optional[Tuple]], Any] target: The task. A
-            callable which accepts two integers (the global and the local rank
-            of the device) and an optional tuple which are the callable's
+            callable which accepts two integers (the global and local ranks of
+            the device) and an optional tuple which are the callable's
             arguments.
+
         :param Optional[Tuple] args: Arguments to be passed to ``target``.
             Default: ``None``.
         """
@@ -159,7 +158,8 @@ class Wrapper:
         Utils.print('Starting process(es).')
 
         def finished():
-            if self.platform.upon_finish is not None:
+            if self.platform.upon_finish is not None and \
+                callable(self.platform.upon_finish):
                 return self.platform.upon_finish()
 
         match self.platform.device:

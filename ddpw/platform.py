@@ -23,7 +23,7 @@ class Device(Enum):
     r"""The device to run on is a cluster of GPU nodes managed by SLURM."""
 
     MPS = 'mps'
-    r"""The device to run on is an Apple SoC."""
+    r"""The device to run on is Apple SoC."""
 
     @staticmethod
     def from_str(device: str) -> 'Device':
@@ -31,10 +31,11 @@ class Device(Enum):
         This method returns a :py:class:`Device` object given a valid device
         string.
 
-        :param str device: The name of the device. Supported values: ``cpu``,
+        :param str device: The type of the device. Supported values: ``cpu``,
             ``gpu``, ``slurm``, and ``mps`` (case insensitive).
 
-        :returns Device: :py:class:`Device` corresponds to the device string.
+        :returns Device: :py:class:`Device` corresponds to the device type
+            string.
         
         :raises ValueError: Raises an error if the string is invalid.
         """
@@ -68,13 +69,13 @@ class Platform:
     r"""The total number of nodes (used by SLURM).  Default: ``1``."""
 
     n_gpus: int = 1
-    r"""The total number of GPUs (in each node). Default: ``1``."""
+    r"""The number of GPUs (per node). Default: ``1``."""
 
     n_cpus: int = 1
-    r"""The total number of CPUs (per task/thread). Default: ``1``."""
+    r"""The total number of CPUs (used by SLURM). Default: ``1``."""
 
     ram: int = 32
-    r"""RAM per CPU in GB (used by SLURM). Default: ``32``."""
+    r"""Total RAM (in GB) (used by SLURM). Default: ``32``."""
 
     spawn_method: Optional[str] = 'fork'
     r"""This property corresponds to that passed to
@@ -91,7 +92,8 @@ class Platform:
     r"""The port at which IPC happens. Default: a random port between 1024 and
     49151."""
 
-    backend: Optional[dist.Backend] = dist.Backend.GLOO if hasattr(dist, 'Backend') else None
+    backend: Optional[dist.Backend] = dist.Backend.GLOO if \
+        hasattr(dist, 'Backend') else None
     r"""The PyTorch-supported backend to use for distributed data parallel.
     Default: ``torch.distributed.Backend.GLOO``."""
 
@@ -107,11 +109,10 @@ class Platform:
     r"""Location of console logs (used by SLURM). Default: ``./logs``"""
 
     verbose: Optional[bool] = True
-    r"""Whether to run the wrapper in a verbose mode or not. Default:
-    ``True``."""
+    r"""Whether or not to output updates during setup. Default: ``True``."""
 
     upon_finish: Optional[Callable] = None
-    r"""Any cleanup tasks to be done upon completion. Default: ``None``."""
+    r"""A callable task to be invoked upon completion. Default: ``None``."""
 
     def __post_init__(self):
         if isinstance(self.device, str):
@@ -141,7 +142,8 @@ class Platform:
 
     def print(self):
         r"""
-        This method prints this object in a human readable format.
+        This method serialised this object in a human readable format and
+        prints it.
         """
 
         details = f"""
@@ -149,8 +151,8 @@ class Platform:
 
         \r • Name:\t\t\t\t{self.name}
         \r • Device:\t\t\t\t{self.device.value.upper()}
-        \r • CPUs (per thread):\t\t\t{self.n_cpus}
-        \r • RAM (per CPU):\t\t\t{self.ram}GB
+        \r • CPUs:\t\t\t{self.n_cpus}
+        \r • Total RAM:\t\t\t{self.ram}GB
         \r • GPUs (per node):\t\t\t{self.n_gpus} (requested)
         \r • GPUs (per node):\t\t\t{torch.cuda.device_count()} (available)
         \r • PyTorch backend:\t\t\t{self.backend}

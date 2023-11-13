@@ -14,7 +14,7 @@ from .platform import Device, Platform
 
 def seed_generators(seed: int):
     r"""
-    This function seed (pseudo)random number generators from various packages.
+    This function seeds (pseudo)random number generators from various packages.
 
     :param int seed: The seed.
     """
@@ -55,8 +55,9 @@ def average_params_grads(module: torch.nn.Module, params: bool = False,
 
 def optimiser_to(optimiser: torch.optim.Optimizer, device: torch.device):
     r"""
-    This function offers a simple way to move all parameters of an optimiser
-    to the specified device. This function has been taken as is from a `solution
+    This function offers a simple way to move all the parameters optimised by an
+    optimiser to the specified device. This function has been taken as is from a
+    `solution
     <https://discuss.pytorch.org/t/moving-optimizer-from-cpu-to-gpu/96068/3>`_
     on `PyTorch Discuss <https://discuss.pytorch.org>`_.
 
