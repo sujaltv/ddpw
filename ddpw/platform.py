@@ -105,6 +105,12 @@ class Platform:
     r"""Minimum timeout (in minutes) for jobs (used by SLURM). Default:
     ``2880`` (two days)."""
 
+    slurm_additional_parameters: Optional[dict] = None
+    r"""Additional SLURM parameters; this dictionary corresponds to
+    ``submitit``'s ``slurm_additional_parameters`` `argument
+    <https://github.com/facebookincubator/submitit/issues/23>`_. Default:
+    ``None``."""
+
     console_logs: str = './logs'
     r"""Location of console logs (used by SLURM). Default: ``./logs``"""
 
