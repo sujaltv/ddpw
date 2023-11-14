@@ -4,9 +4,9 @@
 [![Conda](https://img.shields.io/conda/v/tvsujal/ddpw)](https://anaconda.org/tvsujal/ddpw)
 [![PyPI](https://img.shields.io/pypi/v/ddpw)](https://pypi.org/project/ddpw/)
 
-[![Publish documentation to AWS S3](https://github.com/sujaltv/ddpw/actions/workflows/s3_publish.yml/badge.svg)](https://github.com/sujaltv/ddpw/actions/workflows/s3_publish.yml)
-[![Publish to Anaconda](https://github.com/sujaltv/ddpw/actions/workflows/conda_publish.yml/badge.svg)](https://github.com/sujaltv/ddpw/actions/workflows/conda_publish.yml)
-[![Publish to PyPI](https://github.com/sujaltv/ddpw/actions/workflows/pypi_publish.yml/badge.svg)](https://github.com/sujaltv/ddpw/actions/workflows/pypi_publish.yml)
+[![Publish documentation to AWS S3](https://github.com/sujaltv/ddpw/actions/workflows/s3_publish.yml/badge.svg)](https://github.com/sujaltv/ddpw/actions/workflows/s3_publish.yaml)
+[![Publish to Anaconda](https://github.com/sujaltv/ddpw/actions/workflows/conda_publish.yml/badge.svg)](https://github.com/sujaltv/ddpw/actions/workflows/conda_publish.yaml)
+[![Publish to PyPI](https://github.com/sujaltv/ddpw/actions/workflows/pypi_publish.yml/badge.svg)](https://github.com/sujaltv/ddpw/actions/workflows/pypi_publish.yaml)
 
 ---
 
@@ -31,9 +31,9 @@ pip install ddpw # with pip from PyPI
 ```python
 from ddpw import Platform, Wrapper
 
-# some job
-def run(global_rank, local_rank, args):
-    print(f'This is node {global_rank}, device {local_rank}; args = {args}') 
+# some task
+def task(global_rank, local_rank, args):
+    print(f'This is GPU {global_rank}(G)/{local_rank}(L); args = {args}') 
 
 # platform (e.g., 4 GPUs)
 platform = Platform(device='gpu', n_gpus=4)
@@ -42,6 +42,6 @@ platform = Platform(device='gpu', n_gpus=4)
 wrapper = Wrapper(platform=platform)
 
 # start
-wrapper.start(run, (0, 'example', [0.1, 0.2], {'a': 0}))
+wrapper.start(task, ('example',))
 ```
 
