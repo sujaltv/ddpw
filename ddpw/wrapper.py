@@ -138,6 +138,10 @@ class Wrapper:
             slurm_partition=self.platform.partition
         )
 
+        if self.platform.slurm_additional_parameters is not None:
+            executor.update_parameters(slurm_additional_parameters=
+                                   self.platform.slurm_additional_parameters)
+
         return executor.submit(target)
 
     def start(self, target: Callable[[int, int, Optional[Tuple]], Any],

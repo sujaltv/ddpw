@@ -82,7 +82,7 @@ def has_batch_norm(module: nn.Module) -> bool:
     r"""
     This function checks if a module has batch normalisation layer(s) in it.
 
-    :param nn.Moudle module: The module to be checked for containing any batch
+    :param nn.Module module: The module to be checked for containing any batch
         normalisation layers.
 
     :returns bool: Whether or not the module has batch normalisation layer(s) in
