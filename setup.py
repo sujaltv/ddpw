@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as f:
 
 setup(
   name="ddpw",
-  version="5.1.1",
+  version="5.2.0",
   build="0",
   author="Sujal T.V.",
   url="https://ddpw.projects.sujal.tv",
