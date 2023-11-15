@@ -10,9 +10,9 @@ to focus on the main aspects of the task.
 
 This wrapper offers setups for different compute platforms including:
 
-#. CPU,
-#. one or more GPUs (CUDA and Apple SoC), and
-#. SLURM (by using `Submitit <https://github.com/facebookincubator/submitit>`_)
+#. CPU/Apple SoC,
+#. one or more CUDA-supported GPUs, and
+#. SLURM-managed nodes (using `Submitit <https://github.com/facebookincubator/submitit>`_)
 
 Example
 =======
@@ -36,8 +36,9 @@ Example
     # start
     wrapper.start(task, ('example',))
 
-Refer to the :ref:`example with MNIST <MNIST example>` for a more detailed
-example.
+Refer to :ref:`the platform API <platform api>` for more platform-related
+configurations and the :ref:`example with MNIST <MNIST example>` for a more
+detailed example.
 
 .. toctree::
    :caption: Introduction
@@ -56,7 +57,6 @@ example.
    api/wrapper
    api/platform
    api/functional
-   api/utils
 
 .. toctree::
    :caption: Miscellaneous
@@ -67,19 +67,12 @@ example.
    quickstart/mnist
 
 .. toctree::
-   :caption: Contribution
+   :caption: Development
    :glob:
    :hidden:
    :titlesonly:
 
    contribution/source
    contribution/documentation
-
-.. toctree::
-   :caption: Bureau
-   :glob:
-   :hidden:
-   :titlesonly:
-
    LICENCE
 

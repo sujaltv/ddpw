@@ -1,7 +1,7 @@
 from typing import Optional
 
 
-class Utils:
+class IO:
     verbose: Optional[bool] = True
     r"""A global boolean property that specifies if the wrapper must output
     updates to the console or not."""
@@ -19,7 +19,7 @@ class Utils:
         if 'flush' not in kwargs:
             kwargs['flush'] = True
   
-        if kwargs.get('verbose', Utils.verbose):
+        if kwargs.get('verbose', IO.verbose):
             if 'verbose' in kwargs: del(kwargs['verbose'])
             print(*args, **kwargs)
   

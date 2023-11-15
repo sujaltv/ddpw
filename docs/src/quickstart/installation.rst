@@ -6,6 +6,8 @@ Installation
     This wrapper is released for all architectures but is tested only on Linux
     arch-64 and Apple SoC.
 
+This module is distributed on PyPI and Anaconda.
+
 With ``conda``
 ==============
 

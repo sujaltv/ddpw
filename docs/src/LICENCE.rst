@@ -1,6 +1,8 @@
 Licence
 #######
 
+.. admonition:: Licence
+
     BSD 3-Clause Licence
 
     Copyright (c) 2023, Sujal Vijayaraghavan. All rights reserved.

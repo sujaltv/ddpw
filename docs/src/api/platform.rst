@@ -10,5 +10,7 @@ Supported devices
 Platform setup
 ==============
 
+.. _platform api:
+
 .. autoclass:: ddpw.platform.Platform
     :members:

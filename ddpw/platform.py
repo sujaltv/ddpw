@@ -1,12 +1,12 @@
 from enum import Enum
 from random import randint
-from typing import List, final, Optional, Callable, Union
+from typing import List, final, Optional, Callable
 from dataclasses import dataclass, field
 
 import torch
 from torch import distributed as dist
 
-from .utils import Utils
+from .io import IO
 
 
 @final
@@ -59,7 +59,7 @@ class Platform:
     name: str = 'ddpw'
     r"""Name of the platform job. Used by SLURM. Default: ``ddpw``."""
 
-    device: Union[Device, str] = Device.GPU
+    device: Device | str = Device.GPU
     r"""The type of device. Default: ``Device.GPU``."""
 
     partition: str = 'general'
@@ -85,6 +85,13 @@ class Platform:
     r"""IPC protocol. Accepted values: ``tcp`` and ``file``. Default:
     ``tcp``."""
 
+    master_addr: str = 'localhost'
+    r"""IPC address. Default: ``localhost``."""
+
+    master_port: Optional[str] = str(randint(1024, 49151))
+    r"""The port at which IPC happens. Default: a random port between 1024 and
+    49151."""
+
     ipc_groups: Optional[List[List[int]]] = field(default_factory=lambda: [])
 
     r"""A list of list of non-overlaping global ranks of devices. If ``None``,
@@ -92,28 +99,29 @@ class Platform:
     list is passed, all devices are grouped into one process group. Default:
     ``[]``.
 
+    .. admonition:: Examples
+        :class: note
+
+        .. code:: python
+
+            # no IPC between devices; each device is its own group
+            platform = Platform(device='gpu', n_gpus=4, ipc_groups=None)
+
+            # all devices under one group: default behaviour
+            platform = Platform(device='gpu', n_gpus=4)
+            platform = Platform(device='gpu', n_gpus=4, ipc_groups=[])
+
+            # custom groups
+            platform = Platform(device='gpu', n_gpus=4, ipc_groups=[[0, 2], [1], [3]])
+            platform = Platform(device='gpu', n_gpus=4, ipc_groups=[[0, 2], [1, 3]])
+
     .. admonition:: Variable groups unstable
         :class: warning
 
         PyTorch behaviour seems to be inconsistent when using variable process
         groups. An `open bug <https://github.com/pytorch/pytorch/issues/29115>`_
         issue is on GitHub.
-
-    Example
-    =======
-
-    .. code:: python
-
-        platform = Platform(device='gpu', n_gpus=4, ipc_groups=[[0, 2], [1, 3]])
-
     """
-
-    master_addr: str = 'localhost'
-    r"""IPC address. Default: ``localhost``."""
-
-    master_port: Optional[str] = str(randint(1024, 49151))
-    r"""The port at which IPC happens. Default: a random port between 1024 and
-    49151."""
 
     backend: Optional[dist.Backend] = dist.Backend.GLOO if \
         hasattr(dist, 'Backend') else None
@@ -164,6 +172,8 @@ class Platform:
 
         if self.device in [Device.CPU, Device.MPS]: return False
 
+        if len(self.ipc_groups) == 0: return False
+
         if self.device == Device.GPU:
             return torch.cuda.device_count() > 1 and self.world_size > 1
 
@@ -206,5 +216,5 @@ class Platform:
         \r • World size:\t\t\t\t{self.world_size}
         """
 
-        Utils.print(details)
+        IO.print(details)
 

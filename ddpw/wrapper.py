@@ -6,7 +6,7 @@ import torch.distributed as dist
 import torch.multiprocessing as mp
 
 from .platform import Device, Platform
-from .utils import Utils
+from .io import IO
 from . import functional as DF
 
 
@@ -29,7 +29,7 @@ def setup(node: int, global_rank: int, local_rank: int, platform: Platform,
 
     node_info = f'Node {node}, GPU {global_rank}(G)/{local_rank}(L)'
 
-    Utils.print(f'[{node_info}] Initialising the process.')
+    IO.print(f'[{node_info}] Initialising the process.')
 
     if platform.requires_ipc:
         os.environ['MASTER_ADDR'] = platform.master_addr
@@ -38,38 +38,42 @@ def setup(node: int, global_rank: int, local_rank: int, platform: Platform,
         im = f'{platform.ipc_protocol}://{os.environ["MASTER_ADDR"]}'
         if port is not None: im = f'{im}:{os.environ["MASTER_PORT"]}'
 
-        Utils.print(f'[{node_info}] IPC at {im}.')
+        IO.print(f'[{node_info}] IPC at {im}.')
 
+        # do not specify the rank if process groups are to be used
+        process_rank = -1
+        if platform.ipc_groups is None or len(platform.ipc_groups) == 0:
+            process_rank = global_rank
         dist.init_process_group(backend=platform.backend, init_method=im,
-                            rank=global_rank, world_size=platform.world_size)
+                            rank=process_rank, world_size=platform.world_size)
 
     # 1. Seed random number generators
-    Utils.print(f'[{node_info}] ' +
+    IO.print(f'[{node_info}] ' +
                 f'Seeding random number generators with {platform.seed}.')
     DF.seed_generators(platform.seed)
 
     # organise groups
-    g = dist.GroupMember.WORLD
+    grp = dist.GroupMember.WORLD
     if platform.ipc_groups is None:
-        g = dist.new_group(ranks=[global_rank])
+        grp = dist.new_group(ranks=[global_rank])
     elif len(platform.ipc_groups):
-        device_group = g
+        device_group = grp
         for device_group in platform.ipc_groups:
             if global_rank in device_group: break
-        g = dist.new_group(ranks=device_group, timeout=timedelta(seconds=30),
+        grp = dist.new_group(ranks=device_group, timeout=timedelta(seconds=30),
                            backend=platform.backend)
 
     # 2. Wait for all the processes in this group to synchronise and then start
     # the task
-    if platform.requires_ipc: dist.barrier(g)
+    if platform.requires_ipc: dist.barrier(grp)
 
     # 3. Invoke the given task
-    Utils.print(f'[{node_info}] All setup finished.')
-    target(global_rank, local_rank, g, args)
+    IO.print(f'[{node_info}] All setup finished.')
+    target(global_rank, local_rank, grp, args)
 
     # 4. Cleanup
-    if platform.requires_ipc: dist.destroy_process_group(g)
-    Utils.print(f'[{node_info}] Tasks on device complete.')
+    if platform.requires_ipc: dist.destroy_process_group(grp)
+    IO.print(f'[{node_info}] Tasks on device complete.')
  
 
 class Wrapper:
@@ -82,16 +86,16 @@ class Wrapper:
     """
 
     def __init__(self, platform: Platform):
-        Utils.verbose = platform.verbose
+        IO.verbose = platform.verbose
 
-        Utils.print('Initialising the DDP Wrapper.')
+        IO.print('Initialising the DDP Wrapper.')
         self.platform = platform
 
         if platform.requires_ipc:
             try:
                 mp.set_start_method(platform.spawn_method)
             except RuntimeError as e:
-                Utils.print(
+                IO.print(
                   f'Warning: {e}. Skipping setting the start method for forks.')
 
     def __gpu(self, target: Callable[[int, int, dist.ProcessGroup,
@@ -107,11 +111,11 @@ class Wrapper:
 
         if self.platform.world_size == 1:
             node_info = f'Node 0, GPU 0(G)/0(L)'
-            Utils.print(f'[{node_info}] Task starting on GPU.')
+            IO.print(f'[{node_info}] Task starting on GPU.')
             setup(0, 0, 0, self.platform, target, args)
             return
 
-        Utils.print(f'Spawning {self.platform.world_size} processes.')
+        IO.print(f'Spawning {self.platform.world_size} processes.')
         processes = []
 
         # create a process for each GPU in the world
@@ -123,7 +127,7 @@ class Wrapper:
 
         for p in processes: p.join()
 
-        Utils.print('All processes complete.')
+        IO.print('All processes complete.')
 
     def __slurm(self, target: Callable, console_logs: str):
         r"""
@@ -135,7 +139,7 @@ class Wrapper:
         """
         from submitit import AutoExecutor
 
-        Utils.print('Setting up the SLURM platform.')
+        IO.print('Setting up the SLURM platform.')
 
         executor = AutoExecutor(folder=console_logs)
         executor.update_parameters(
@@ -155,14 +159,15 @@ class Wrapper:
 
         return executor.submit(target)
 
-    def start(self, target: Callable[[int, int, Optional[Tuple]], Any],
-              args: Optional[Tuple] = None):
+    def start(self, target: Callable[[int, int, dist.ProcessGroup,
+              Optional[Tuple]], Any], args: Optional[Tuple] = None):
         r"""
         This method performs the necessary setup for the CPU/GPU/SLURM task and
         then invokes the task.
 
-        :param Callable[[int, int, dist.ProcessGroup, Optional[Tuple]], Any]
-            target: The task. A callable which accepts two integers (the global
+        :param Callable[[int, int, dist.ProcessGroup, Optional[Tuple]], Any] target:
+            The task. A
+            callable which accepts two integers (the global
             and local ranks of the device), the process group, and an optional
             tuple which are the callable's arguments.
 
@@ -172,7 +177,7 @@ class Wrapper:
 
         self.platform.print()
 
-        Utils.print('Starting process(es).')
+        IO.print('Starting process(es).')
 
         def finished():
             if self.platform.upon_finish is not None and \
@@ -202,7 +207,7 @@ class Wrapper:
                     \r • Global rank: {job_env.global_rank}.
                     \r • Local rank: {job_env.local_rank}.
                     """
-                    Utils.print(details)
+                    IO.print(details)
 
                     setup(job_env.node, job_env.global_rank, job_env.local_rank,
                           self.platform, target, args)
