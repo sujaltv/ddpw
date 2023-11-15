@@ -165,7 +165,6 @@ class Wrapper:
             callable which accepts two integers (the global
             and local ranks of the device), the process group, and an optional
             tuple which are the callable's arguments.
-
         :param Optional[Tuple] args: Arguments to be passed to ``target``.
             Default: ``None``.
         """
