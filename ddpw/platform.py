@@ -1,7 +1,7 @@
 from enum import Enum
 from random import randint
-from typing import final, Optional, Callable, Union
-from dataclasses import dataclass
+from typing import List, final, Optional, Callable, Union
+from dataclasses import dataclass, field
 
 import torch
 from torch import distributed as dist
@@ -84,6 +84,29 @@ class Platform:
     ipc_protocol: str = 'tcp'
     r"""IPC protocol. Accepted values: ``tcp`` and ``file``. Default:
     ``tcp``."""
+
+    ipc_groups: Optional[List[List[int]]] = field(default_factory=lambda: [])
+
+    r"""A list of list of non-overlaping global ranks of devices. If ``None``,
+    every device will be its own group, and no IPC will take place. If an empty
+    list is passed, all devices are grouped into one process group. Default:
+    ``[]``.
+
+    .. admonition:: Variable groups unstable
+        :class: warning
+
+        PyTorch behaviour seems to be inconsistent when using variable process
+        groups. An `open bug <https://github.com/pytorch/pytorch/issues/29115>`_
+        issue is on GitHub.
+
+    Example
+    =======
+
+    .. code:: python
+
+        platform = Platform(device='gpu', n_gpus=4, ipc_groups=[[0, 2], [1, 3]])
+
+    """
 
     master_addr: str = 'localhost'
     r"""IPC address. Default: ``localhost``."""

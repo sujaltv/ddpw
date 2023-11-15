@@ -32,7 +32,7 @@ pip install ddpw # with pip from PyPI
 from ddpw import Platform, Wrapper
 
 # some task
-def task(global_rank, local_rank, args):
+def task(global_rank, local_rank, group, args):
     print(f'This is GPU {global_rank}(G)/{local_rank}(L); args = {args}') 
 
 # platform (e.g., 4 GPUs)

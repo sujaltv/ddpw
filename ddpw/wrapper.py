@@ -1,3 +1,4 @@
+from datetime import timedelta
 import os
 from typing import Any, Callable, Optional, Tuple
 
@@ -10,7 +11,7 @@ from . import functional as DF
 
 
 def setup(node: int, global_rank: int, local_rank: int, platform: Platform,
-          target: Callable[[int, int, Optional[Tuple]], Any],
+          target: Callable[[int, int, dist.ProcessGroup, Optional[Tuple]], Any],
           args: Optional[Tuple]) :
     r"""
     This function is called at the beginning of the process in each device
@@ -47,15 +48,27 @@ def setup(node: int, global_rank: int, local_rank: int, platform: Platform,
                 f'Seeding random number generators with {platform.seed}.')
     DF.seed_generators(platform.seed)
 
-    # 2. Wait for all the processes to synchronise and then start the task
-    if platform.requires_ipc: dist.barrier()
+    # organise groups
+    g = dist.GroupMember.WORLD
+    if platform.ipc_groups is None:
+        g = dist.new_group(ranks=[global_rank])
+    elif len(platform.ipc_groups):
+        device_group = g
+        for device_group in platform.ipc_groups:
+            if global_rank in device_group: break
+        g = dist.new_group(ranks=device_group, timeout=timedelta(seconds=30),
+                           backend=platform.backend)
+
+    # 2. Wait for all the processes in this group to synchronise and then start
+    # the task
+    if platform.requires_ipc: dist.barrier(g)
 
     # 3. Invoke the given task
     Utils.print(f'[{node_info}] All setup finished.')
-    target(global_rank, local_rank, args)
+    target(global_rank, local_rank, g, args)
 
     # 4. Cleanup
-    if platform.requires_ipc: dist.destroy_process_group()
+    if platform.requires_ipc: dist.destroy_process_group(g)
     Utils.print(f'[{node_info}] Tasks on device complete.')
  
 
@@ -81,8 +94,8 @@ class Wrapper:
                 Utils.print(
                   f'Warning: {e}. Skipping setting the start method for forks.')
 
-    def __gpu(self, target: Callable[[int, int, Optional[Tuple]], Any],
-              args: Optional[Tuple]):
+    def __gpu(self, target: Callable[[int, int, dist.ProcessGroup,
+                              Optional[Tuple]], Any], args: Optional[Tuple]):
         r"""
         This method spins up a process for each GPU in the world. It assigns the
         task to be run on each process, `viz.`, distributing the datasets and
@@ -148,10 +161,10 @@ class Wrapper:
         This method performs the necessary setup for the CPU/GPU/SLURM task and
         then invokes the task.
 
-        :param Callable[[int, int, Optional[Tuple]], Any] target: The task. A
-            callable which accepts two integers (the global and local ranks of
-            the device) and an optional tuple which are the callable's
-            arguments.
+        :param Callable[[int, int, dist.ProcessGroup, Optional[Tuple]], Any]
+            target: The task. A callable which accepts two integers (the global
+            and local ranks of the device), the process group, and an optional
+            tuple which are the callable's arguments.
 
         :param Optional[Tuple] args: Arguments to be passed to ``target``.
             Default: ``None``.
