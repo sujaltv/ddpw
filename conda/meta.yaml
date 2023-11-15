@@ -1,16 +1,14 @@
 ---
-{% set data = load_setup_py_data(setup_file='../setup.py', from_recipe_dir=True) %}
-
 package:
   name: ddpw
-  version: {{ data.get('version') }}
+  version: 5.2.1
 
 source:
   path: ..
 
 build:
   noarch: python
-  number: {{ data.get('build') }}
+  number: 0
   script: {{ PYTHON }} setup.py install --single-version-externally-managed --record=record.txt
 
 requirements:

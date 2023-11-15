@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ddpw"
-version = "5.2.0"
+version = "5.2.1"
 description = "A lightweight wrapper that scaffolds PyTorch's (Distributed Data) Parallel."
 authors = [ { name = "Sujal Vijayaraghavan" } ]
 maintainers = [ { name = "Sujal Vijayaraghavan" } ]
