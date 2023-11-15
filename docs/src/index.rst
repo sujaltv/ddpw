@@ -72,7 +72,7 @@ detailed example.
    :hidden:
    :titlesonly:
 
-   contribution/source
-   contribution/documentation
+   development/source
+   development/documentation
    LICENCE
 

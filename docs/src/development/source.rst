@@ -13,13 +13,6 @@ Set up
     # with pip
     pip install -r requirements.txt
 
-Freeze environment
-^^^^^^^^^^^^^^^^^^
-
-.. code-block:: bash
-
-    sh freeze.sh
-
 Update environment
 ^^^^^^^^^^^^^^^^^^
 
