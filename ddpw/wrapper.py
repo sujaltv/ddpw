@@ -41,11 +41,8 @@ def setup(node: int, global_rank: int, local_rank: int, platform: Platform,
         IO.print(f'[{node_info}] IPC at {im}.')
 
         # do not specify the rank if process groups are to be used
-        process_rank = -1
-        if platform.ipc_groups is None or len(platform.ipc_groups) == 0:
-            process_rank = global_rank
         dist.init_process_group(backend=platform.backend, init_method=im,
-                            rank=process_rank, world_size=platform.world_size)
+                            rank=global_rank, world_size=platform.world_size)
 
     # 1. Seed random number generators
     IO.print(f'[{node_info}] ' +
@@ -54,9 +51,7 @@ def setup(node: int, global_rank: int, local_rank: int, platform: Platform,
 
     # organise groups
     grp = dist.GroupMember.WORLD
-    if platform.ipc_groups is None:
-        grp = dist.new_group(ranks=[global_rank])
-    elif len(platform.ipc_groups):
+    if platform.requires_ipc and len(platform.ipc_groups) > 0:
         device_group = grp
         for device_group in platform.ipc_groups:
             if global_rank in device_group: break

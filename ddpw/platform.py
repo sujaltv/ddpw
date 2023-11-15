@@ -172,7 +172,7 @@ class Platform:
 
         if self.device in [Device.CPU, Device.MPS]: return False
 
-        if len(self.ipc_groups) == 0: return False
+        if self.ipc_groups is None: return False
 
         if self.device == Device.GPU:
             return torch.cuda.device_count() > 1 and self.world_size > 1
