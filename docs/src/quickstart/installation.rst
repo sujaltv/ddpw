@@ -9,7 +9,7 @@ Installation
 DDPW is distributed on PyPI and Anaconda. The source is available on GitHub, so
 can also be manually built from the source code.
 
-.. tab:: Binaries
+.. tab:: Wheels
 
     |
 
@@ -22,7 +22,7 @@ can also be manually built from the source code.
 
     .. code:: bash
 
-        conda install -c tvsujal ddpw
+        conda install ddpw -c tvsujal
 
 
     PyPI:
