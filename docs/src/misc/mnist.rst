@@ -1,6 +1,9 @@
-Example with MNIST
-##################
-.. _MNIST example:
+:orphan:
+
+.. _sec:mnist-example:
+
+Example
+^^^^^^^
 
 .. code-block:: python
     :caption: main.py
@@ -12,11 +15,11 @@ Example with MNIST
     from torchvision.datasets.mnist import MNIST
     from torchvision import transforms as T
 
-    from src.model import MyModel
+    from src.model import Model
     from src.example import Example
 
 
-    model = MyModel()
+    model = Model()
     t = T.Compose([T.ToTensor(), T.Normalize((0.1307,), (0.3081,))])
     dataset = MNIST(root='./datasets/MNSIT', train=True, download=True, transform=t)
 
@@ -35,9 +38,9 @@ Example with MNIST
     from torch.nn import functional as F
 
 
-    class MyModel(torch.nn.Module):
+    class Model(torch.nn.Module):
         def __init__(self):
-            super(MyModel, self).__init__()
+            super(Model, self).__init__()
 
             self.conv1 = torch.nn.Conv2d(1, 32, (3,3))
             self.conv2 = torch.nn.Conv2d(32, 64, (3,3))

@@ -1,6 +1,8 @@
 Contribution
 #############
 
+.. _sec:dependencies:
+
 .. tab:: Development
 
     |
@@ -44,5 +46,5 @@ Contribution
     .. code-block:: bash
 
         > cd docs
-        > make html
+        > make clean html
 
