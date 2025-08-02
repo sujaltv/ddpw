@@ -27,8 +27,7 @@ class Device(Enum):
 
     @staticmethod
     def from_str(device: str) -> "Device":
-        r"""
-        This method returns a :py:class:`Device` object given a valid device
+        r"""This method returns a :py:class:`Device` object given a valid device
         string.
 
         :param str device: The type of the device. Supported values: ``cpu``,
@@ -56,8 +55,7 @@ class Device(Enum):
 @final
 @dataclass
 class Platform:
-    r"""
-    Platform-related configurations such as the device, environment,
+    r"""Platform-related configurations such as the device, environment,
     communication IP address and port, world size, `etc.`
 
     .. admonition:: Examples
@@ -75,43 +73,74 @@ class Platform:
     """
 
     name: str = "ddpw"
-    r"""Name of the platform job. Used by SLURM. Default: ``ddpw``."""
+    r"""Name of the platform job.
+
+    Used by SLURM. Default: ``ddpw``.
+    """
 
     device: Device | str = Device.GPU
-    r"""The type of device. Default: ``Device.GPU``."""
+    r"""The type of device.
+
+    Default: ``Device.GPU``.
+    """
 
     partition: str = "general"
-    r"""Name of the SLURM partition (used only by SLURM). Default: ``general``."""
+    r"""Name of the SLURM partition (used only by SLURM).
+
+    Default: ``general``.
+    """
 
     n_nodes: int = 1
-    r"""The total number of nodes (used only by SLURM).  Default: ``1``."""
+    r"""The total number of nodes (used only by SLURM).
+
+    Default: ``1``.
+    """
 
     n_gpus: int = 1
-    r"""The number of GPUs (per node). Default: ``1``."""
+    r"""The number of GPUs (per node).
+
+    Default: ``1``.
+    """
 
     n_cpus: int = 1
-    r"""The total number of CPUs (used only by SLURM). Default: ``1``."""
+    r"""The total number of CPUs (used only by SLURM).
+
+    Default: ``1``.
+    """
 
     ram: int = 32
-    r"""Total RAM (in GB) (used only by SLURM). Default: ``32``."""
+    r"""Total RAM (in GB) (used only by SLURM).
+
+    Default: ``32``.
+    """
 
     spawn_method: Optional[str] = "fork"
     r"""This string corresponds to that passed to :meth:`mp.set_start_method`.
-    Default: ``fork``."""
+
+    Default: ``fork``.
+    """
 
     ipc_protocol: str = "tcp"
-    r"""IPC protocol. Accepted values: ``tcp`` and ``file``. Default:
-    ``tcp``."""
+    r"""IPC protocol.
+
+    Accepted values: ``tcp`` and ``file``. Default:
+    ``tcp``.
+    """
 
     master_addr: str = "localhost"
-    r"""IPC address. Default: ``localhost``."""
+    r"""IPC address.
+
+    Default: ``localhost``.
+    """
 
     master_port: Optional[str] = str(randint(1024, 49151))
-    r"""The port at which IPC happens. Default: a random port between 1024 and
-    49151."""
+    r"""The port at which IPC happens.
+
+    Default: a random port between 1024 and
+    49151.
+    """
 
     ipc_groups: Optional[List[List[int]]] = field(default_factory=lambda: [])
-
     r"""A list of lists of non-overlapping global ranks of devices. If ``None``,
     every device will be its own group, and no IPC will take place. If an empty
     list is passed, all devices are grouped into one process group. Default:
@@ -145,15 +174,23 @@ class Platform:
         dist.Backend.GLOO if hasattr(dist, "Backend") else None
     )
     r"""The PyTorch-supported backend to use for distributed data parallel.
-    Default: ``torch.distributed.Backend.GLOO``."""
+
+    Default: ``torch.distributed.Backend.GLOO``.
+    """
 
     seed: int = 1889
     r"""Seed with which to initialise the various [pseudo]random number
-    generators. Default: ``1889``."""
+    generators.
+
+    Default: ``1889``.
+    """
 
     timeout_min: int = 2880
-    r"""Minimum timeout (in minutes) for jobs (used only by SLURM). Default:
-    ``2880`` (two days)."""
+    r"""Minimum timeout (in minutes) for jobs (used only by SLURM).
+
+    Default:
+    ``2880`` (two days).
+    """
 
     slurm_additional_parameters: Optional[dict] = None
     r"""Additional SLURM parameters; this dictionary corresponds to the one
@@ -163,15 +200,22 @@ class Platform:
 
     console_logs: str = "./logs"
     r"""Location of console logs (used mainly by SLURM to log the errors and
-    output to files). Default: ``./logs``"""
+    output to files).
+
+    Default: ``./logs``
+    """
 
     verbose: Optional[bool] = True
     r"""Whether or not to print updates to the standard output during setup.
-    Default: ``True``."""
+
+    Default: ``True``.
+    """
 
     upon_finish: Optional[Callable] = None
     r"""An optional callable to be invoked upon completion of the given task.
-    Default: ``None``."""
+
+    Default: ``None``.
+    """
 
     def __post_init__(self):
         if isinstance(self.device, str):
@@ -179,8 +223,11 @@ class Platform:
 
     @property
     def world_size(self):
-        r"""Specified the world size. This is the total number of GPUs across
-        all nodes. Default: ``1``."""
+        r"""Specified the world size.
+
+        This is the total number of GPUs across
+        all nodes. Default: ``1``.
+        """
 
         n_nodes = self.n_nodes if self.device == Device.SLURM else 1
         n_gpus = (
@@ -193,9 +240,11 @@ class Platform:
 
     @property
     def requires_ipc(self):
-        r"""Specified whether the processes need inter-communication. This
-        property determines whether or not the setup requires IPC. IPC is not
-        required for a single device."""
+        r"""Specified whether the processes need inter-communication.
+
+        This property determines whether or not the setup requires IPC.
+        IPC is not required for a single device.
+        """
 
         if self.device in [Device.CPU, Device.MPS]:
             return False
@@ -209,10 +258,8 @@ class Platform:
         return self.world_size > 1
 
     def print(self):
-        r"""
-        This method serialises this object in a human readable format and
-        prints it.
-        """
+        r"""This method serialises this object in a human readable format and
+        prints it."""
 
         details = f"""
         \r Platform details:
