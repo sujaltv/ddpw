@@ -1,36 +1,35 @@
 import os
 import sys
 
+sys.path.insert(0, os.path.abspath("../.."))
 
-sys.path.insert(0, os.path.abspath('../..'))
-
-project = 'DDPW'
-author = 'Sujal'
-templates_path = ['_templates']
-exclude_patterns = ['build', 'Thumbs.db', '.DS_Store']
+project = "DDPW"
+author = "Sujal"
+templates_path = ["_templates"]
+exclude_patterns = ["build", "Thumbs.db", ".DS_Store"]
 
 extensions = [
-  "sphinx.ext.intersphinx",
-  "sphinx.ext.autodoc",
-  "sphinx.ext.doctest",
-  "sphinx.ext.extlinks",
-  "sphinx.ext.autosummary",
-  "fluiddoc.mathmacro",
-  "sphinx.ext.todo",
-  "sphinx.ext.mathjax",
-  # "sphinx.ext.viewcode",
-  "sphinx_copybutton",
-  "sphinxcontrib.bibtex",
-  "sphinx_inline_tabs"
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.doctest",
+    "sphinx.ext.extlinks",
+    "sphinx.ext.autosummary",
+    "fluiddoc.mathmacro",
+    "sphinx.ext.todo",
+    "sphinx.ext.mathjax",
+    # "sphinx.ext.viewcode",
+    "sphinx_copybutton",
+    "sphinxcontrib.bibtex",
+    "sphinx_inline_tabs",
 ]
 
-html_theme = 'furo'
+html_theme = "furo"
 html_show_sourcelink = False
 html_show_copyright = True
 copyright = f"Sujal"
-html_favicon = './assets/favicon.ico'
+html_favicon = "./assets/favicon.ico"
 html_show_sphinx = False
-html_title = 'DDPW'
+html_title = "DDPW"
 html_theme_options = {
     "footer_icons": [
         {
@@ -44,10 +43,10 @@ html_theme_options = {
             "class": "",
         },
     ],
-    "sidebar_hide_name": True
+    "sidebar_hide_name": True,
 }
-html_static_path = ['_static']
-html_css_files = ['fonts.css', 'custom.css']
+html_static_path = ["_static"]
+html_css_files = ["fonts.css", "custom.css"]
 
 html_context = {
     "display_github": True,  # 'Edit on Github' instead of 'View page source'
@@ -55,30 +54,29 @@ html_context = {
     "github_repo": "ddpw",
     "github_version": "master",
     "copyright_duration": "2021-2024",
-    "copyright_url": "https://sujal.tv"
+    "copyright_url": "https://sujal.tv",
 }
 
 pygments_style = "friendly"
 pygments_dark_style = "material"
 
-bibtex_bibfiles = ['references.bib']
-bibtex_default_style = 'plain'
-bibtex_reference_style = 'super'
+bibtex_bibfiles = ["references.bib"]
+bibtex_default_style = "plain"
+bibtex_reference_style = "super"
 bibtex_bibliography_header = ".. rubric:: References"
 bibtex_footbibliography_header = bibtex_bibliography_header
 
 # sphinx-autodoc
-add_module_names = True # autocode to show only the final name
+add_module_names = True  # autocode to show only the final name
 autodoc_member_order = "bysource"
-autodoc_class_signature = 'mixed' # show init arguments without __init__
-autodoc_preserve_defaults = True # True does not evaluate default values
-autodoc_typehints = 'signature'
-autodoc_typehints_format = 'short' # short typehints for class/method arguments
+autodoc_class_signature = "mixed"  # show init arguments without __init__
+autodoc_preserve_defaults = True  # True does not evaluate default values
+autodoc_typehints = "signature"
+autodoc_typehints_format = "short"  # short typehints for class/method arguments
 
 # sphinx-autodoc-typehints
-typehints_fully_qualified = False # return type name resolution
+typehints_fully_qualified = False  # return type name resolution
 typehints_use_signature = True
 typehints_use_signature_return = True
-typehints_document_rtype = False # show or hide return type
+typehints_document_rtype = False  # show or hide return type
 typehints_use_rtype = True
-
