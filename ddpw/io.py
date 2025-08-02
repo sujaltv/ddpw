@@ -8,10 +8,9 @@ class IO:
 
     @staticmethod
     def print(*args, **kwargs):
-        r"""
-        A custom print wrapper that outputs the contents if the process is
-        running in the verbose mode (`i.e.`, ``verbose = True``). This method is
-        a simple check around Python's system print function.
+        r"""A custom print wrapper that outputs the contents if the process is
+        running in the verbose mode (`i.e.`, ``verbose = True``). This method
+        is a simple check around Python's system print function.
 
         :param bool verbose: To print or not to print. Default: ``None``.
         """

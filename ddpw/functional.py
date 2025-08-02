@@ -6,7 +6,13 @@ from torch import Tensor
 from torch import device as t_device
 from torch import distributed as dist
 from torch.cuda import current_device, is_available, manual_seed_all
-from torch.nn import BatchNorm1d, BatchNorm2d, BatchNorm3d, Module, SyncBatchNorm
+from torch.nn import (
+    BatchNorm1d,
+    BatchNorm2d,
+    BatchNorm3d,
+    Module,
+    SyncBatchNorm,
+)
 from torch.nn.parallel import DistributedDataParallel
 from torch.optim import Optimizer
 from torch.random import manual_seed
@@ -16,8 +22,8 @@ from .platform import Device, Platform
 
 
 def seed_generators(seed: int):
-    r"""
-    This function seeds [pseudo]random number generators from various packages.
+    r"""This function seeds [pseudo]random number generators from various
+    packages.
 
     :param int seed: The seed.
     """
@@ -28,7 +34,9 @@ def seed_generators(seed: int):
     manual_seed_all(seed)
 
 
-def average_params_grads(module: Module, params: bool = False, grads: bool = True):
+def average_params_grads(
+    module: Module, params: bool = True, grads: bool = False
+):
     r"""
     Given a module, this function averages the parameters of the given model
     and/or their gradients across all the GPUs (copied over from a `PyTorch blog
@@ -38,9 +46,9 @@ def average_params_grads(module: Module, params: bool = False, grads: bool = Tru
     :param torch.nn.Module module: The module whose parameters/gradients are to
         be averaged.
     :param bool params: Whether to average the parameters or not. Default:
-        ``False``.
-    :param bool grads: Whether to average the gradients or not. Default:
         ``True``.
+    :param bool grads: Whether to average the gradients or not. Default:
+        ``False``.
     """
 
     if not (params and grads):
@@ -83,14 +91,12 @@ def optimiser_to(optimiser: Optimizer, device: t_device):
 
 
 def has_batch_norm(module: Module) -> bool:
-    r"""
-    This function checks if a module has batch normalisation layer(s) in it.
+    r"""This function checks if a module has batch normalisation layer(s) in it.
 
-    :param nn.Module module: The module to be checked for containing any batch
-        normalisation layers.
-
-    :returns bool: Whether or not the module has batch normalisation layer(s) in
-        it.
+    :param nn.Module module: The module to be checked for containing any
+        batch normalisation layers.
+    :returns bool: Whether or not the module has batch normalisation
+        layer(s) in it.
     """
 
     if isinstance(module, (BatchNorm1d, BatchNorm2d, BatchNorm3d)):
@@ -151,17 +157,15 @@ def to(
 def get_dataset_sampler(
     dataset: Dataset, global_rank: int, platform: Platform
 ) -> Optional[DistributedSampler]:
-    r"""
-    This function selects a portion of the original dataset shared by other
+    r"""This function selects a portion of the original dataset shared by other
     devices. If the device is CPU or MPS, no sharing is necessary.
 
-    :param data.Dataset dataset: The dataset from which to sample for the
-        current device.
+    :param data.Dataset dataset: The dataset from which to sample for
+        the current device.
     :param int global_rank: The global rank of the device.
     :param Platform platform: Platform-related configurations.
-
-    :returns DistributedSampler: Dataset sampler for the given dataset and
-        world size.
+    :returns DistributedSampler: Dataset sampler for the given dataset
+        and world size.
     """
 
     sampler = None
@@ -175,13 +179,11 @@ def get_dataset_sampler(
 
 
 def device(module: Module) -> t_device:
-    r"""
-    Given a module, this function returns the device on which it currently
+    r"""Given a module, this function returns the device on which it currently
     resides. If the module has no parameters, the current device is returned by
     default.
 
     :param nn.Module module: The module whose device is sought.
-
     :returns torch.device: The device of the module.
     """
 
