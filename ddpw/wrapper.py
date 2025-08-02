@@ -26,8 +26,7 @@ def setup(
     target: Callable[[int, int, ProcessGroup, Optional[Tuple]], Any],
     args: Optional[Tuple],
 ):
-    r"""
-    This function is called at the beginning of the process in each device
+    r"""This function is called at the beginning of the process in each device
     (CPU/GPU). Depending on the needs, this function establishes DDP
     communication protocols, seeds random number generators, invokes the given
     task, and performs cleanup tasks.
@@ -48,9 +47,9 @@ def setup(
         environ["MASTER_ADDR"] = platform.master_addr
         port = environ["MASTER_PORT"] = str(platform.master_port)
 
-        im = f'{platform.ipc_protocol}://{environ["MASTER_ADDR"]}'
+        im = f"{platform.ipc_protocol}://{environ['MASTER_ADDR']}"
         if port is not None:
-            im = f'{im}:{environ["MASTER_PORT"]}'
+            im = f"{im}:{environ['MASTER_PORT']}"
 
         IO.print(f"[{node_info}] IPC at {im}.")
 
@@ -64,7 +63,8 @@ def setup(
 
     # 1. Seed random number generators
     IO.print(
-        f"[{node_info}] " + f"Seeding random number generators with {platform.seed}."
+        f"[{node_info}] "
+        + f"Seeding random number generators with {platform.seed}."
     )
     DF.seed_generators(platform.seed)
 
@@ -76,7 +76,9 @@ def setup(
             if global_rank in device_group:
                 break
         grp = new_group(
-            ranks=device_group, timeout=timedelta(seconds=30), backend=platform.backend
+            ranks=device_group,
+            timeout=timedelta(seconds=30),
+            backend=platform.backend,
         )
 
     # 2. Wait for all the processes in this group to synchronise and then start
@@ -125,17 +127,18 @@ class Wrapper:
             try:
                 set_start_method(platform.spawn_method)
             except RuntimeError as e:
-                IO.print(f"Warning: {e}. Skipping setting the start method for forks.")
+                IO.print(
+                    f"Warning: {e}. Skipping setting the start method for forks."
+                )
 
     def __gpu(
         self,
         target: Callable[[int, int, ProcessGroup, Optional[Tuple]], Any],
         args: Optional[Tuple],
     ):
-        r"""
-        This method spins up a process for each GPU in the world. It assigns the
-        task to be run on each process, `viz.`, distributing the datasets and
-        models and commencing the task.
+        r"""This method spins up a process for each GPU in the world. It assigns
+        the task to be run on each process, `viz.`, distributing the datasets
+        and models and commencing the task.
 
         :param Callable target: The function to call on each GPU upon setup.
         :param Optional[Tuple] args: Arguments to be passed to ``target``.
@@ -152,7 +155,9 @@ class Wrapper:
 
         # create a process for each GPU in the world
         for rank in range(self.platform.world_size):
-            p = Process(target=setup, args=(0, rank, rank, self.platform, target, args))
+            p = Process(
+                target=setup, args=(0, rank, rank, self.platform, target, args)
+            )
             processes.append(p)
             p.start()
 
@@ -162,11 +167,11 @@ class Wrapper:
         IO.print("All processes complete.")
 
     def __slurm(self, target: Callable, console_logs: str):
-        r"""
-        Similar to :py:meth:`.__gpu` but for SLURM. An additional step includes
-        spinning up a process for each node, done with ``submitit``.
+        r"""Similar to :py:meth:`.__gpu` but for SLURM. An additional step
+        includes spinning up a process for each node, done with ``submitit``.
 
-        :param Callable target: The function to call on each GPU upon setup.
+        :param Callable target: The function to call on each GPU upon
+            setup.
         :param str console_logs: Location to save SLURM console logs.
         """
         from submitit import AutoExecutor
@@ -197,8 +202,7 @@ class Wrapper:
         target: Callable[[int, int, ProcessGroup, Optional[Tuple]], Any],
         args: Optional[Tuple] = None,
     ):
-        r"""
-        This method performs the necessary setup according to the specified
+        r"""This method performs the necessary setup according to the specified
         configurations and then invokes the given task.
 
         :param Callable[[int, int, dist.ProcessGroup, Optional[Tuple]], Any] target:
@@ -230,10 +234,8 @@ class Wrapper:
             case Device.SLURM:
 
                 def individual_gpu():
-                    r"""
-                    This nested function is the starting point for each
-                    SLURM-based GPU.
-                    """
+                    r"""This nested function is the starting point for each
+                    SLURM-based GPU."""
                     from submitit import JobEnvironment
 
                     self.platform.master_addr = environ["HOSTNAME"]
@@ -273,8 +275,7 @@ class Wrapper:
 
 
 def wrapper(platform: Platform):
-    r"""
-    A decorator that can be applied to callables.
+    r"""A decorator that can be applied to callables.
 
     :param Platform platform: Platform details.
 
@@ -294,7 +295,12 @@ def wrapper(platform: Platform):
     def __ddpw(fn):
         def __wrapper(*args, **kwargs):
             def __my_fn(global_rank, local_rank, _, __):
-                return fn(*args, **kwargs)
+                return fn(
+                    *args,
+                    **kwargs,
+                    global_rank=global_rank,
+                    local_rank=local_rank,
+                )
 
             Wrapper(platform).start(__my_fn)
 
