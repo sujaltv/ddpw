@@ -1,17 +1,17 @@
 [project]
     name = "ddpw"
-    version = "5.3.1"
-    description = "A lightweight wrapper that scaffolds PyTorch's (Distributed Data) Parallel."
+    version = "5.4.0"
+    description = "A lightweight wrapper that scaffolds PyTorch's Distributed (Data) Parallel."
     authors = [ { name = "Sujal Vijayaraghavan" } ]
     maintainers = [ { name = "Sujal Vijayaraghavan" } ]
     readme = "README.md"
-    requires-python = ">=3.10"
+    requires-python = ">=3.13"
     dependencies = [
-        "numpy>=1.24.0",
-        "torch>=2.0.0",
-        "submitit>=1.4.5"
+        "submitit>=1.5.3",
+        "torch>=2.8.0",
     ]
-    license = { file = "LICENCE" }
+    license = "BSD-3-Clause"
+    license-files = [ "LICENCE" ]
     keywords = [ "pytorch", "distributed compute" ]
     classifiers = [
         "Programming Language :: Python"
@@ -23,11 +23,19 @@
         Documentation = "https://ddpw.projects.sujal.tv"
 
 [build-system]
-    requires = ["setuptools>=68", "wheel"]
-    build-backend = "setuptools.build_meta"
+    requires = ["uv_build>=0.8.11"]
+    build-backend = "uv_build"
 
-[tool.setuptools]
-    packages = [ "ddpw" ]
+[tool.uv.build-backend]
+    module-name = "ddpw"
+    module-root = "."
 
-    [tool.setuptools.package-dir]
-        ddpw = "./ddpw"
+[dependency-groups]
+    docs = [
+        "fluiddyn>=0.9.0",
+        "furo>=2025.7.19",
+        "sphinx>=8.2.3",
+        "sphinx-copybutton>=0.5.2",
+        "sphinx-inline-tabs>=2023.4.21",
+        "sphinxcontrib-bibtex>=2.6.5",
+    ]

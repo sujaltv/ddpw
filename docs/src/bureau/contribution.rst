@@ -3,48 +3,31 @@ Contribution
 
 .. _sec:dependencies:
 
-.. tab:: Development
+Development
+^^^^^^^^^^^
 
-    |
+All packages are installed with ``uv`` and listed `pyproject.toml`. An
+existing environment can be update with ``conda env update``:
 
-    All packages are installed with ``conda`` or ``pip`` and listed in
-    ``environment.yml`` and ``requirements.txt``, respectively, and can be
-    installed with the following commands:
+.. code-block:: bash
 
-    .. code-block:: bash
+    uv sync [--active]
 
-        # with conda
-        conda env create --file environment.yml
-        conda activate ddpw
+Documentation
+^^^^^^^^^^^^^
 
-        # with pip
-        pip install -r requirements.txt
+This documentation is written in Sphinx with Furo; the documentation build
+dependencies can be installed with `uv`:
 
-    An existing environment can be update with ``conda env update``:
+.. code-block:: bash
 
-    .. code-block:: bash
+    > uv sync [--active] --group docs
 
-        conda env update --file environment.yml
 
-.. tab:: Documentation
+``Makefile`` has recipes to compile and build the documentation into HTML:
 
-    |
+.. code-block:: bash
 
-    This documentation is written in Sphinx with Furo; the dependencies can be
-    installed with the following commands:
-
-    .. code-block:: bash
-
-        # with conda
-        > conda env create --file environment.yml # root folder
-        > conda activate ddpw
-        > pip install -r requirements.txt
-
-    The ``Make`` file compiles and builds the documentation into HTML and the
-    following commands can be used to do so:
-
-    .. code-block:: bash
-
-        > cd docs
-        > make clean html
+    > cd docs
+    > make clean html
 

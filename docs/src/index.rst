@@ -2,8 +2,8 @@ Introduction
 ^^^^^^^^^^^^
 
 Distributed Data Parallel Wrapper (DDPW) is a lightweight Python wrapper
-relevant for `PyTorch <https://pytorch.org/>`_ users. It is written in Python
-3.10.
+relevant to `PyTorch <https://pytorch.org/>`_ users. It is written in Python
+3.13.
 
 DDPW enables writing compute-intensive tasks (such as training models) without
 deeply worrying about the underlying compute platform (CPU, Apple SoC, GPUs, or
@@ -20,7 +20,7 @@ Installation
 ============
 
 DDPW is distributed on PyPI. The source code is available on GitHub and can be
-used to manually build the package.
+used to manually build it as a dependency package.
 
 .. admonition:: Target platforms
    :class: warning
@@ -33,6 +33,17 @@ used to manually build the package.
     |
 
     PyPI
+        **With** ``uv``
+
+        .. code:: bash
+
+            # to instal and add to pyroject.toml
+            uv add [--active] ddpw
+            # or to simply instal
+            uv pip install ddpw
+
+        **With** ``pip``
+
         .. code:: bash
 
             pip install ddpw
@@ -60,20 +71,45 @@ used to manually build the package.
             > git clone https://github.com/sujaltv/ddpw
             > cd ddpw
 
-            > pip install .
+            > uv pip install .
 
 Usage
 =====
 
+As a decorator
+______________
+
 .. code-block:: python
     :linenos:
-    :emphasize-lines: 1,8,11,14
+    :emphasize-lines: 1,3,5
+
+    from ddpw import Platform, wrapper
+
+    platform = Platform(device="gpu", n_cpus=32, ram=64, n_gpus=4, verbose=True)
+
+    @wrapper(platform)
+    def run(*args, **kwargs):
+        # global and local ranks, and the process group in:
+        # kwargs['global_rank'], # kwargs['local_rank'], kwargs['group']
+        pass
+
+    if __name__ == '__main__':
+        run(...)
+
+As a callable
+-------------
+
+.. code-block:: python
+    :linenos:
+    :emphasize-lines: 1,10,13,16
 
     from ddpw import Platform, Wrapper
 
     # some task
-    def task(global_rank, local_rank, process_group, args):
-        print(f'This is GPU {global_rank}(G)/{local_rank}(L); args = {args}') 
+    def run(*args, **kwargs):
+        # global and local ranks, and the process group in:
+        # kwargs['global_rank'], # kwargs['local_rank'], kwargs['group']
+        pass
 
     # platform (e.g., 4 GPUs)
     platform = Platform(device='gpu', n_gpus=4)
@@ -83,18 +119,6 @@ Usage
 
     # start
     wrapper.start(task, ('example',))
-
-As a decorator
-______________
-
-.. code:: python
-
-    from ddpw import Platform, wrapper
-
-    @wrapper(Platform(device='gpu', n_gpus=2, n_cpus=2))
-    def run(a, b):
-        # some task
-        pass
 
 Refer to the :ref:`API <sec:api>` for more configuration options or the :ref:`example with
 MNIST <sec:mnist-example>` for an illustration.

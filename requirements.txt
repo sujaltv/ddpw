@@ -1,9 +1,0 @@
-build
-twine
-fluiddyn
-furo
-realpython-reader
-sphinx
-sphinx-copybutton
-sphinxcontrib-bibtex
-sphinx-inline-tabs

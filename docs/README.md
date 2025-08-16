@@ -1,20 +1,18 @@
 # DDPW Documentation
 
-This is the source for the [DDPW
-Documentation](https://ddpw.projects.sujal.tv) written in Python 3.10 with
-[Sphinx](https://www.sphinx-doc.org/en/master/).
+This is the source for the [DDPW Documentation](https://ddpw.projects.sujal.tv)
+written in Python 3.13 with [Sphinx](https://www.sphinx-doc.org/en/master/).
 
 ## Set up
 
 ```bash
-> conda env create --file environment.yml # root folder
-> conda activate ddpw
-> pip install -r requirements.txt # required for building this documentation
+# to instal documentation build-related dependencies
+uv sync --active --group docs
 ```
 
 **Making the documentation**
 
 ```bash
-> cd docs
-> make html
+cd docs
+make html
 ```
