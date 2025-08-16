@@ -22,8 +22,7 @@ from .platform import Device, Platform
 
 
 def seed_generators(seed: int):
-    r"""This function seeds [pseudo]random number generators from various
-    packages.
+    r"""Seed [pseudo]random number generators from various dependencies.
 
     :param int seed: The seed.
     """
@@ -38,10 +37,9 @@ def average_params_grads(
     module: Module, params: bool = True, grads: bool = False
 ):
     r"""
-    Given a module, this function averages the parameters of the given model
-    and/or their gradients across all the GPUs (copied over from a `PyTorch blog
-    <https://pytorch.org/tutorials/intermediate/dist_tuto.html>`_ and further
-    modified here).
+    Averages the parameters of the given module and/or their gradients across
+    all the GPUs (copied over from a `PyTorch blog <https://pytorch.org/tutorials/intermediate/dist_tuto.html>`_
+    and further modified here).
 
     :param torch.nn.Module module: The module whose parameters/gradients are to
         be averaged.

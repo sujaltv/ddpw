@@ -5,7 +5,6 @@ from typing import Any, Callable, Optional, Tuple
 
 from torch.distributed import (
     GroupMember,
-    ProcessGroup,
     barrier,
     destroy_process_group,
     init_process_group,
@@ -23,7 +22,7 @@ def setup(
     global_rank: int,
     local_rank: int,
     platform: Platform,
-    target: Callable[[int, int, ProcessGroup, Optional[Tuple]], Any],
+    target: Callable[[Tuple, dict], Any],
     args: Optional[Tuple],
 ):
     r"""This function is called at the beginning of the process in each device
@@ -70,7 +69,11 @@ def setup(
 
     # organise groups
     grp = GroupMember.WORLD
-    if platform.requires_ipc and len(platform.ipc_groups) > 0:
+    if (
+        platform.requires_ipc
+        and platform.ipc_groups is not None
+        and len(platform.ipc_groups) > 0
+    ):
         device_group = grp
         for device_group in platform.ipc_groups:
             if global_rank in device_group:
@@ -88,7 +91,12 @@ def setup(
 
     # 3. Invoke the given task
     IO.print(f"[{node_info}] All setup finished.")
-    target(global_rank, local_rank, grp, args)
+    kwargs = {
+        "global_rank": global_rank,
+        "local_rank": local_rank,
+        "group": grp,
+    }
+    target(*(args or ()), **kwargs)
 
     # 4. Cleanup
     if platform.requires_ipc:
@@ -133,7 +141,7 @@ class Wrapper:
 
     def __gpu(
         self,
-        target: Callable[[int, int, ProcessGroup, Optional[Tuple]], Any],
+        target: Callable[[Tuple, dict], Any],
         args: Optional[Tuple],
     ):
         r"""This method spins up a process for each GPU in the world. It assigns
@@ -145,7 +153,7 @@ class Wrapper:
         """
 
         if self.platform.world_size == 1:
-            node_info = f"Node 0, GPU 0(G)/0(L)"
+            node_info = "Node 0, GPU 0(G)/0(L)"
             IO.print(f"[{node_info}] Task starting on GPU.")
             setup(0, 0, 0, self.platform, target, args)
             return
@@ -197,19 +205,26 @@ class Wrapper:
 
         return executor.submit(target)
 
+    def __get_hostname(self) -> str:
+        r"""Returns the host name of the master node."""
+
+        from socket import gethostbyname
+        from subprocess import check_output
+
+        cmd = ["scontrol", "show", "hostnames", environ["SLURM_NODELIST"]]
+        host = check_output(cmd).decode().splitlines()[0]
+
+        return gethostbyname(host)
+
     def start(
         self,
-        target: Callable[[int, int, ProcessGroup, Optional[Tuple]], Any],
+        target: Callable[[Tuple, dict], Any],
         args: Optional[Tuple] = None,
     ):
         r"""This method performs the necessary setup according to the specified
         configurations and then invokes the given task.
 
-        :param Callable[[int, int, dist.ProcessGroup, Optional[Tuple]], Any] target:
-            The task. A
-            callable which accepts two integers (the global
-            and local ranks of the device), the process group, and an optional
-            tuple which are the callable's arguments.
+        :param Callable[[Tuple, dict], Any] target: The task, a callable.
         :param Optional[Tuple] args: Arguments to be passed to ``target``.
             Default: ``None``.
         """
@@ -238,8 +253,9 @@ class Wrapper:
                     SLURM-based GPU."""
                     from submitit import JobEnvironment
 
-                    self.platform.master_addr = environ["HOSTNAME"]
                     job_env = JobEnvironment()
+
+                    self.platform.master_addr = self.__get_hostname()
 
                     details = f"""
                     \r • Node: {job_env.node}.
@@ -286,21 +302,18 @@ def wrapper(platform: Platform):
 
             from ddpw import Platform, wrapper
 
-            @wrapper(Platform(device='gpu', n_gpus=2, n_cpus=2))
-            def run(a, b):
+            platform = Platform(device='gpu', n_gpus=2, n_cpus=2)
+
+            @wrapper(platform)
+            def run(*args, **kwargs):
                 # some task
                 pass
     """
 
     def __ddpw(fn):
-        def __wrapper(*args, **kwargs):
-            def __my_fn(global_rank, local_rank, _, __):
-                return fn(
-                    *args,
-                    **kwargs,
-                    global_rank=global_rank,
-                    local_rank=local_rank,
-                )
+        def __wrapper(*args, **_):
+            def __my_fn(*_, **kwargs):
+                return fn(*args, **kwargs)
 
             Wrapper(platform).start(__my_fn)
 
