@@ -6,31 +6,6 @@ Example
 ^^^^^^^
 
 .. code-block:: python
-    :caption: main.py
-    :linenos:
-    :emphasize-lines: 1,14,17,18
-
-    from ddpw import Platform, Wrapper
-
-    from torchvision.datasets.mnist import MNIST
-    from torchvision import transforms as T
-
-    from src.model import Model
-    from src.example import Example
-
-
-    model = Model()
-    t = T.Compose([T.ToTensor(), T.Normalize((0.1307,), (0.3081,))])
-    dataset = MNIST(root='./datasets/MNSIT', train=True, download=True, transform=t)
-
-    platform = Platform(device='gpu', n_gpus=4)
-    example = Example(model, dataset, platform=platform, batch_size=32, epochs=2)
-
-    wrapper = Wrapper(platform=platform)
-    wrapper.start(example)
-
-
-.. code-block:: python
     :caption: src/model.py
     :linenos:
 
@@ -71,64 +46,72 @@ Example
 
 
 .. code-block:: python
-    :caption: src/example.py
+    :caption: main.py
     :linenos:
+    :emphasize-lines: 1,10,18
 
-    from tqdm import tqdm
-    import torch
-    from torch import distributed as dist
-    from torch.nn import functional as F
+    from ddpw import Platform, wrapper
 
-    from ddpw import functional as DF
-    from torch.utils.data import DataLoader
+    from torch.cuda import set_device
+    from torch.optim import SGD
+    from torchvision.datasets.mnist import MNIST
+    from torchvision import transforms as T
+
+    from src.model import Model
+
+    platform = Platform(device='slurm', n_nodes=2, n_gpus=4, n_cpus=8, ram=16)
+
+    EPOCS = 50
+    BATCH_SIZE = 64
+
+    t = T.Compose([T.ToTensor(), T.Normalize((0.1307,), (0.3081,))])
+    dataset = MNIST(root='./datasets/MNSIT', train=True, download=True, transform=t)
+
+    @wrapper(platform)
+    def train(*args, **kwargs):
+        global_rank, local_rank = kwargs['global_rank'], kwargs['local_rank']
+        print(f'Global rank {global_rank}; local rank {local_rank}')
+
+        set_device(local_rank)
+
+        # model
+        model = DF.to(Model(), local_rank, device=platform.device)
+
+        # dataset
+        sampler=DF.get_dataset_sampler(dataset, global_rank, platform)
+        dataloader = DataLoader(dataset, sampler=sampler, batch_size=batch_size, pin_memory=True)
+
+        # optimiser
+        optimiser = SGD(model.parameters(), lr=1e-3)
+
+        training_loss = torch.Tensor([0.0]).to(DF.device(model))
+        print(f'Model on device {DF.device(model)}; dataset size: {len(dataloader) * batch_size}')
+
+        # for every epoch
+        for e in range(EPOCS):
+            print(f'Epoch {e} of {epochs}')
+
+            for _, (imgs, labels) in enumerate(dataloader, position=local_rank):
+                optimiser.zero_grad()
+
+                preds = model(imgs.to(DF.device(model)))
+                loss = F.nll_loss(preds, labels.to(DF.device(model)))
+                training_loss += loss
+                loss.backward()
+
+                optimiser.step()
+
+            training_loss /= len(dataloader)
+
+            # synchronise metrics
+            if platform.requires_ipc:
+                dist.all_reduce(training_loss, dist.ReduceOp.SUM)
+                training_loss /= dist.get_world_size()
+
+            if global_rank == 0:
+                # code for storing logs and saving state
+                print(training_loss.item())
 
 
-    class Example:
-        def __init__(self, model, dataset, platform, batch_size, epochs):
-            self.model = model
-            self.dataset = dataset
-            self.platform = platform
-
-            self.batch_size = batch_size
-            self.epochs = epochs
-
-        def __call__(self, global_rank, local_rank):
-            print(f'Global rank {global_rank}; local rank {local_rank}')
-            model = DF.to(self.model, local_rank, device=self.platform.device)
-            dataloader = DataLoader(
-                self.dataset,
-                sampler=DF.get_dataset_sampler(self.dataset, global_rank, self.platform),
-                batch_size=self.batch_size,
-                pin_memory=True
-            )
-            optimiser = torch.optim.SGD(model.parameters(), lr=1e-3)
-
-            training_loss = torch.Tensor([0.0]).to(DF.device(model))
-            torch.cuda.set_device(local_rank)
-            print(f'Model on device {DF.device(model)}; dataset size: {len(dataloader) * self.batch_size}')
-
-            # for every epoch
-            for e in range(self.epochs):
-                print(f'Epoch {e} of {self.epochs}')
-
-                for _, (imgs, labels) in enumerate(tqdm(dataloader, position=local_rank)):
-                    optimiser.zero_grad()
-
-                    preds = model(imgs.to(DF.device(model)))
-                    loss = F.nll_loss(preds, labels.to(DF.device(model)))
-                    training_loss += loss
-                    loss.backward()
-
-                    optimiser.step()
-
-                training_loss /= len(dataloader)
-
-                # synchronise metrics
-                if self.platform.requires_ipc:
-                  dist.all_reduce(training_loss, dist.ReduceOp.SUM)
-                  training_loss /= dist.get_world_size()
-
-                if global_rank == 0:
-                    # code for storing logs and saving state
-                    print(training_loss.item())
-
+    if __name__ == '__main__':
+        train(args)

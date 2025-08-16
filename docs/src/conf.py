@@ -26,7 +26,7 @@ extensions = [
 html_theme = "furo"
 html_show_sourcelink = False
 html_show_copyright = True
-copyright = f"Sujal"
+copyright = f"{author}"
 html_favicon = "./assets/favicon.ico"
 html_show_sphinx = False
 html_title = "DDPW"
@@ -53,7 +53,7 @@ html_context = {
     "github_user": "sujaltv",
     "github_repo": "ddpw",
     "github_version": "master",
-    "copyright_duration": "2021-2024",
+    "copyright_duration": "2021-2025",
     "copyright_url": "https://sujal.tv",
 }
 
