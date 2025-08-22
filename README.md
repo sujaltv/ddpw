@@ -44,7 +44,7 @@ def run(*args, **kwargs):
     pass
 
 if __name__ == '__main__':
-    run(...)
+    run(*args, **kwargs)
 ```
 
 #### As a callable
@@ -66,12 +66,5 @@ if __name__ == '__main__':
     wrapper = Wrapper(platform=platform)
 
     # start
-    wrapper.start(task, (...))
+    wrapper.start(task, *args, **kwargs)
 ```
-
----
-
-###### Status
-
-[![Publish to PyPI](https://github.com/sujaltv/ddpw/actions/workflows/pypi_publish.yaml/badge.svg)](https://github.com/sujaltv/ddpw/actions/workflows/pypi_publish.yaml)
-[![Publish documentation](https://github.com/sujaltv/ddpw/actions/workflows/s3_publish.yaml/badge.svg)](https://github.com/sujaltv/ddpw/actions/workflows/s3_publish.yaml)

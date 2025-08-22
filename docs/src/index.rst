@@ -28,50 +28,42 @@ used to manually build it as a dependency package.
    This wrapper is released for all architectures but is tested only on Linux
    arch-64 and Apple SoC.
 
-.. tab:: Wheels
+PyPI
+    **With** ``uv``
 
-    |
+    .. code:: bash
 
-    PyPI
-        **With** ``uv``
+        # to instal and add to pyroject.toml
+        uv add [--active] ddpw
+        # or to simply instal
+        uv pip install ddpw
 
-        .. code:: bash
+    **With** ``pip``
 
-            # to instal and add to pyroject.toml
-            uv add [--active] ddpw
-            # or to simply instal
-            uv pip install ddpw
+    .. code:: bash
 
-        **With** ``pip``
+        pip install ddpw
 
-        .. code:: bash
+    .. image:: https://img.shields.io/pypi/v/ddpw
+        :target: https://pypi.org/project/ddpw/
+        :alt: PyPI publication
 
-            pip install ddpw
+GitHub
+    .. code:: bash
 
-        .. image:: https://img.shields.io/pypi/v/ddpw
-            :target: https://pypi.org/project/ddpw/
-            :alt: PyPI publication
+        pip install git+'https://github.com/sujaltv/ddpw'
 
-    GitHub
-        .. code:: bash
+    .. image:: https://img.shields.io/badge/github-ddpw-skyblue
+        :target: https://github.com/sujaltv/ddpw
+        :alt: PyPI publication
 
-            pip install git+'https://github.com/sujaltv/ddpw'
+Manual build
+    .. code:: bash
 
-        .. image:: https://img.shields.io/badge/github-ddpw-skyblue
-            :target: https://github.com/sujaltv/ddpw
-            :alt: PyPI publication
+        > git clone https://github.com/sujaltv/ddpw
+        > cd ddpw
 
-.. tab:: Manual build
-
-    |
-
-    With ``pip``
-        .. code:: bash
-
-            > git clone https://github.com/sujaltv/ddpw
-            > cd ddpw
-
-            > uv pip install .
+        > uv pip install .
 
 Usage
 =====
@@ -94,7 +86,7 @@ ______________
         pass
 
     if __name__ == '__main__':
-        run(...)
+        run(*args, **kwargs)
 
 As a callable
 -------------
@@ -118,7 +110,7 @@ As a callable
     wrapper = Wrapper(platform=platform)
 
     # start
-    wrapper.start(task, ('example',))
+    wrapper.start(task, *args, **kwargs)
 
 Refer to the :ref:`API <sec:api>` for more configuration options or the :ref:`example with
 MNIST <sec:mnist-example>` for an illustration.
