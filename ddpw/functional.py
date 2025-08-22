@@ -5,7 +5,14 @@ from numpy.random import seed as np_seed
 from torch import Tensor
 from torch import device as t_device
 from torch import distributed as dist
-from torch.cuda import current_device, is_available, manual_seed_all
+from torch.cuda import (
+    current_device,
+    is_available,
+    manual_seed_all,
+)
+from torch.cuda import (
+    set_device as __set_device,
+)
 from torch.nn import (
     BatchNorm1d,
     BatchNorm2d,
@@ -21,7 +28,7 @@ from torch.utils.data import Dataset, DistributedSampler
 from .platform import Device, Platform
 
 
-def seed_generators(seed: int):
+def seed_generators(seed: int) -> None:
     r"""Seed [pseudo]random number generators from various dependencies.
 
     :param int seed: The seed.
@@ -35,7 +42,7 @@ def seed_generators(seed: int):
 
 def average_params_grads(
     module: Module, params: bool = True, grads: bool = False
-):
+) -> None:
     r"""
     Averages the parameters of the given module and/or their gradients across
     all the GPUs (copied over from a `PyTorch blog <https://pytorch.org/tutorials/intermediate/dist_tuto.html>`_
@@ -63,7 +70,7 @@ def average_params_grads(
             p /= world_size
 
 
-def optimiser_to(optimiser: Optimizer, device: t_device):
+def optimiser_to(optimiser: Optimizer, device: t_device) -> None:
     r"""
     This function offers a simple way to move all the parameters optimised by an
     optimiser to the specified device. This function has been taken as is from a
@@ -91,8 +98,8 @@ def optimiser_to(optimiser: Optimizer, device: t_device):
 def has_batch_norm(module: Module) -> bool:
     r"""This function checks if a module has batch normalisation layer(s) in it.
 
-    :param nn.Module module: The module to be checked for containing any
-        batch normalisation layers.
+    :param torch.nn.Module module: The module to be checked for
+        containing any batch normalisation layers.
     :returns bool: Whether or not the module has batch normalisation
         layer(s) in it.
     """
@@ -112,6 +119,8 @@ def to(
     local_rank: int,
     sync_modules: bool = True,
     device: Device = Device.GPU,
+    *ddp_args,
+    **ddp_kwargs,
 ) -> Module:
     r"""
     A quick and minimal function that works on all devices to move the given
@@ -130,6 +139,8 @@ def to(
         function can be called regardless of the current device in which the
         items are and thus helps avoid additional checks. Default:
         ``Device.GPU``.
+    :param ddp_args: Arguments to `DistributedDataParallel`.
+    :param ddp_kwargs: Keyworded arguments to `DistributedDataParallel`.
 
     :returns torch.nn.Module: The module moved to the appropriate device.
     """
@@ -146,7 +157,10 @@ def to(
 
         if dist.is_initialized():
             module = DistributedDataParallel(
-                module, device_ids=[local_rank], find_unused_parameters=False
+                module,
+                device_ids=[local_rank],
+                *ddp_args,
+                **ddp_kwargs,
             )
 
     return module
@@ -158,19 +172,23 @@ def get_dataset_sampler(
     r"""This function selects a portion of the original dataset shared by other
     devices. If the device is CPU or MPS, no sharing is necessary.
 
-    :param data.Dataset dataset: The dataset from which to sample for
-        the current device.
+    :param torch.utils.data.Dataset dataset: The dataset from which to
+        sample for the current device.
     :param int global_rank: The global rank of the device.
     :param Platform platform: Platform-related configurations.
-    :returns DistributedSampler: Dataset sampler for the given dataset
-        and world size.
+    :returns torch.utils.data.DistributedSampler: Dataset sampler for
+        the given dataset and world size.
     """
 
     sampler = None
 
-    if platform.device not in [Device.CPU, Device.MPS]:
+    if (
+        platform.device not in [Device.CPU, Device.MPS]
+        and platform.world_size > 1
+    ):
         sampler = DistributedSampler(
-            dataset, num_replicas=platform.world_size, rank=global_rank
+            dataset,
+            num_replicas=platform.world_size,  # , rank=global_rank
         )
 
     return sampler
@@ -181,7 +199,7 @@ def device(module: Module) -> t_device:
     resides. If the module has no parameters, the current device is returned by
     default.
 
-    :param nn.Module module: The module whose device is sought.
+    :param torch.nn.Module module: The module whose device is sought.
     :returns torch.device: The device of the module.
     """
 
@@ -199,3 +217,14 @@ def device(module: Module) -> t_device:
             device = t_device("cpu")
 
     return device
+
+
+def set_device(local_rank: int, platform: Platform) -> None:
+    r"""Sets the device for the thread from which this is called.
+
+    :param int local_rank: The local rank of the device.
+    :param Platform platform: Platform-related configurations.
+    """
+
+    if platform.device in [Device.GPU, Device.SLURM]:
+        __set_device(local_rank)
