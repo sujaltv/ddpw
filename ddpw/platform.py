@@ -114,10 +114,10 @@ class Platform:
     Default: ``32``.
     """
 
-    spawn_method: Optional[str] = "fork"
+    spawn_method: Optional[str] = "spawn"
     r"""This string corresponds to that passed to :meth:`mp.set_start_method`.
 
-    Default: ``fork``.
+    Default: ``spawn``.
     """
 
     ipc_protocol: str = "tcp"
