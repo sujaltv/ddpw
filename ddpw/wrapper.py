@@ -1,7 +1,7 @@
 from datetime import timedelta
 from os import environ
 from os.path import abspath, expanduser, isabs
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Tuple
 
 from torch.distributed import (
     GroupMember,
@@ -23,7 +23,8 @@ def setup(
     local_rank: int,
     platform: Platform,
     target: Callable[[Tuple, dict], Any],
-    args: Optional[Tuple],
+    *args,
+    **kwargs,
 ):
     r"""This function is called at the beginning of the process in each device
     (CPU/GPU). Depending on the needs, this function establishes DDP
@@ -36,6 +37,9 @@ def setup(
     :param Platform platform: Platform-related configurations.
     :param Callable target: The callable task to invoke upon finishing setup.
     :param Optional[Tuple] args: Arguments to be passed to ``target``.
+        Default: ``None``.
+    :param Optional[Dict] kwargs: Keyword arguments to be passed to ``target``.
+        Default: ``None``.
     """
 
     node_info = f"Node {node}, GPU {global_rank}(G)/{local_rank}(L)"
@@ -91,12 +95,14 @@ def setup(
 
     # 3. Invoke the given task
     IO.print(f"[{node_info}] All setup finished.")
-    kwargs = {
+    _kwargs = {
+        **kwargs,
         "global_rank": global_rank,
         "local_rank": local_rank,
         "group": grp,
+        "platform": platform,
     }
-    target(*(args or ()), **kwargs)
+    target(*args, **_kwargs)
 
     # 4. Cleanup
     if platform.requires_ipc:
@@ -139,23 +145,22 @@ class Wrapper:
                     f"Warning: {e}. Skipping setting the start method for forks."
                 )
 
-    def __gpu(
-        self,
-        target: Callable[[Tuple, dict], Any],
-        args: Optional[Tuple],
-    ):
+    def __gpu(self, target: Callable[[Tuple, dict], Any], *args, **kwargs):
         r"""This method spins up a process for each GPU in the world. It assigns
         the task to be run on each process, `viz.`, distributing the datasets
         and models and commencing the task.
 
         :param Callable target: The function to call on each GPU upon setup.
         :param Optional[Tuple] args: Arguments to be passed to ``target``.
+            Default: ``None``.
+        :param Optional[Dict] kwargs: Keyword arguments to be passed to
+            ``target``. Default: ``None``.
         """
 
         if self.platform.world_size == 1:
             node_info = "Node 0, GPU 0(G)/0(L)"
             IO.print(f"[{node_info}] Task starting on GPU.")
-            setup(0, 0, 0, self.platform, target, args)
+            setup(0, 0, 0, self.platform, target, *args, **kwargs)
             return
 
         IO.print(f"Spawning {self.platform.world_size} processes.")
@@ -164,7 +169,9 @@ class Wrapper:
         # create a process for each GPU in the world
         for rank in range(self.platform.world_size):
             p = Process(
-                target=setup, args=(0, rank, rank, self.platform, target, args)
+                target=setup,
+                args=(0, rank, rank, self.platform, target, *args),
+                kwargs=kwargs,
             )
             processes.append(p)
             p.start()
@@ -216,17 +223,15 @@ class Wrapper:
 
         return gethostbyname(host)
 
-    def start(
-        self,
-        target: Callable[[Tuple, dict], Any],
-        args: Optional[Tuple] = None,
-    ):
+    def start(self, target: Callable[[Tuple, dict], Any], *args, **kwargs):
         r"""This method performs the necessary setup according to the specified
         configurations and then invokes the given task.
 
         :param Callable[[Tuple, dict], Any] target: The task, a callable.
         :param Optional[Tuple] args: Arguments to be passed to ``target``.
             Default: ``None``.
+        :param Optional[Dict] kwargs: Keyword arguments to be passed to
+            ``target``. Default: ``None``.
         """
 
         self.platform.print()
@@ -241,10 +246,10 @@ class Wrapper:
 
         match self.platform.device:
             case Device.CPU | Device.MPS:
-                setup(0, 0, 0, self.platform, target, args)
+                setup(0, 0, 0, self.platform, target, *args, **kwargs)
                 finished()
             case Device.GPU:
-                self.__gpu(target, args)
+                self.__gpu(target, *args, **kwargs)
                 finished()
             case Device.SLURM:
 
@@ -270,7 +275,8 @@ class Wrapper:
                         job_env.local_rank,
                         self.platform,
                         target,
-                        args,
+                        *args,
+                        **kwargs,
                     )
 
                     if job_env.global_rank == 0:
@@ -311,11 +317,8 @@ def wrapper(platform: Platform):
     """
 
     def __ddpw(fn):
-        def __wrapper(*args, **_):
-            def __my_fn(*_, **kwargs):
-                return fn(*args, **kwargs)
-
-            Wrapper(platform).start(__my_fn)
+        def __wrapper(*args, **kwargs):
+            Wrapper(platform).start(fn, *args, **kwargs)
 
         return __wrapper
 
