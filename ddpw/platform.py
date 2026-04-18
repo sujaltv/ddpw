@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from enum import Enum
 from random import randint
-from typing import Callable, List, Optional, final
-
-from torch import distributed as dist
-from torch.cuda import device_count
+from typing import TYPE_CHECKING, Callable, List, Optional, final
 
 from .io import IO
+
+if TYPE_CHECKING:
+    from torch import distributed as dist
 
 
 @final
@@ -66,10 +68,10 @@ class Platform:
             from ddpw import Platform
 
             # a setup with 4 GPUs
-            platform = Platform(device='gpu', n_gpus=4)
+            platform = Platform(device='gpu', n_gpus_per_node=4)
 
             # a setup to request SLURM for 2 nodes, each with 3 GPUs in the "example" partition
-            platform = Platform(device='slurm', n_nodes=2, n_gpus=3, partition='example')
+            platform = Platform(device='slurm', n_nodes=2, n_gpus_per_node=3, partition='example')
     """
 
     name: str = "ddpw"
@@ -96,20 +98,22 @@ class Platform:
     Default: ``1``.
     """
 
-    n_gpus: int = 1
-    r"""The number of GPUs (per node).
+    n_gpus_per_node: int = 1
+    r"""The number of GPUs per node.
 
     Default: ``1``.
     """
 
-    n_cpus: int = 1
-    r"""The total number of CPUs (used only by SLURM).
+    n_cpus_per_node: int = 1
+    r"""The number of CPUs per node (used only by SLURM). Must be divisible by
+    :attr:`n_gpus_per_node` so that CPUs can be split evenly across tasks (one
+    task per GPU).
 
     Default: ``1``.
     """
 
-    ram: int = 32
-    r"""Total RAM (in GB) (used only by SLURM).
+    mem_per_node: int = 32
+    r"""Memory per node in GB (used only by SLURM). Maps to SLURM's ``--mem``.
 
     Default: ``32``.
     """
@@ -133,7 +137,9 @@ class Platform:
     Default: ``localhost``.
     """
 
-    master_port: Optional[str] = str(randint(1024, 49151))
+    master_port: Optional[str] = field(
+        default_factory=lambda: str(randint(1024, 49151))
+    )
     r"""The port at which IPC happens.
 
     Default: a random port between 1024 and
@@ -141,26 +147,32 @@ class Platform:
     """
 
     ipc_groups: Optional[List[List[int]]] = field(default_factory=lambda: [])
-    r"""A list of lists of non-overlapping global ranks of devices. If ``None``,
-    every device will be its own group, and no IPC will take place. If an empty
-    list is passed, all devices are grouped into one process group. Default:
-    ``[]``.
+    r"""Process-group layout across global ranks. Behaviour by value:
+
+    - ``None`` — no process group is initialised; ``group`` handed to the task
+      is ``None`` and collective ops cannot be called. Use this to opt out of
+      distributed coordination entirely.
+    - ``[]`` (default) — all ranks share a single process group
+      (``GroupMember.WORLD``). Initialised even when ``world_size == 1`` so
+      task code can call collective ops uniformly.
+    - A list of lists of non-overlapping global ranks — each inner list forms
+      its own process group. Every rank must belong to exactly one group.
 
     .. admonition:: Examples
         :class: tip
 
         .. code:: python
 
-            # no IPC between devices; each device is its own group
-            platform = Platform(device='gpu', n_gpus=4, ipc_groups=None)
+            # no IPC; each device runs independently
+            platform = Platform(device='gpu', n_gpus_per_node=4, ipc_groups=None)
 
             # all devices under one group: default behaviour
-            platform = Platform(device='gpu', n_gpus=4)
-            platform = Platform(device='gpu', n_gpus=4, ipc_groups=[])
+            platform = Platform(device='gpu', n_gpus_per_node=4)
+            platform = Platform(device='gpu', n_gpus_per_node=4, ipc_groups=[])
 
             # custom groups
-            platform = Platform(device='gpu', n_gpus=4, ipc_groups=[[0, 2], [1], [3]])
-            platform = Platform(device='gpu', n_gpus=4, ipc_groups=[[0, 2], [1, 3]])
+            platform = Platform(device='gpu', n_gpus_per_node=4, ipc_groups=[[0, 2], [1], [3]])
+            platform = Platform(device='gpu', n_gpus_per_node=4, ipc_groups=[[0, 2], [1, 3]])
 
     .. admonition:: Variable groups unstable
         :class: warning
@@ -170,12 +182,11 @@ class Platform:
         issue is on GitHub.
     """
 
-    backend: Optional[dist.Backend] = (
-        dist.Backend.GLOO if hasattr(dist, "Backend") else None
-    )
+    backend: Optional[dist.Backend] = None
     r"""The PyTorch-supported backend to use for distributed data parallel.
 
-    Default: ``torch.distributed.Backend.GLOO``.
+    ``None`` (default) resolves to ``torch.distributed.Backend.GLOO`` when the
+    process group is initialised. Set explicitly to pick a different backend.
     """
 
     seed: int = 1889
@@ -198,11 +209,11 @@ class Platform:
     <https://github.com/facebookincubator/submitit/issues/23>`_. Default:
     ``None``."""
 
-    console_logs: str = "./logs"
+    console_logs: str = "./.output/logs"
     r"""Location of console logs (used mainly by SLURM to log the errors and
     output to files).
 
-    Default: ``./logs``
+    Default: ``./.output/logs``
     """
 
     verbose: Optional[bool] = True
@@ -221,6 +232,16 @@ class Platform:
         if isinstance(self.device, str):
             self.device = Device.from_str(self.device)
 
+        if (
+            self.device == Device.SLURM
+            and self.n_cpus_per_node % self.n_gpus_per_node != 0
+        ):
+            raise ValueError(
+                f"n_cpus_per_node ({self.n_cpus_per_node}) must be divisible "
+                f"by n_gpus_per_node ({self.n_gpus_per_node}): one task is "
+                "launched per GPU and CPUs are split evenly across tasks."
+            )
+
     @property
     def world_size(self):
         r"""Specified the world size.
@@ -230,11 +251,13 @@ class Platform:
         """
 
         n_nodes = self.n_nodes if self.device == Device.SLURM else 1
-        n_gpus = (
-            min(self.n_gpus, device_count())
-            if self.device == Device.GPU
-            else self.n_gpus
-        )
+
+        if self.device == Device.GPU:
+            from torch.cuda import device_count
+
+            n_gpus = min(self.n_gpus_per_node, device_count())
+        else:
+            n_gpus = self.n_gpus_per_node
 
         return n_nodes * n_gpus
 
@@ -253,6 +276,8 @@ class Platform:
             return False
 
         if self.device == Device.GPU:
+            from torch.cuda import device_count
+
             return device_count() > 1 and self.world_size > 1
 
         return self.world_size > 1
@@ -261,20 +286,27 @@ class Platform:
         r"""This method serialises this object in a human readable format and
         prints it."""
 
+        if self.device == Device.SLURM:
+            available_gpus = "N/A (login node)"
+        else:
+            from torch.cuda import device_count
+
+            available_gpus = device_count()
+
         details = f"""
         \r Platform details:
 
         \r • Name:\t\t\t\t{self.name}
         \r • Device:\t\t\t\t{self.device.value.upper()}
-        \r • CPUs:\t\t\t\t{self.n_cpus}
-        \r • Total RAM:\t\t\t\t{self.ram}GB
-        \r • GPUs (per node):\t\t\t{self.n_gpus} (requested)
-        \r • GPUs (per node):\t\t\t{device_count()} (available)
+        \r • CPUs (per node):\t\t\t{self.n_cpus_per_node}
+        \r • Memory (per node):\t\t\t{self.mem_per_node}GB
+        \r • GPUs (per node):\t\t\t{self.n_gpus_per_node} (requested)
+        \r • GPUs (per node):\t\t\t{available_gpus} (available)
         \r • PyTorch backend:\t\t\t{self.backend}
         \r • Seed (random number generators):\t{self.seed}
         """
 
-        if self.device == Device.SLURM or True:
+        if self.device == Device.SLURM:
             details += f"""\
             \r • Nodes:\t\t\t\t{self.n_nodes}
             \r • SLURM partition:\t\t\t{self.partition}

@@ -13,9 +13,9 @@ Example
     from torch.nn import functional as F
 
 
-    class Model(Module):
+    class MNISTModel(Module):
         def __init__(self):
-            super(Model, self).__init__()
+            super(MNISTModel, self).__init__()
 
             self.conv1 = Conv2d(1, 32, (3,3))
             self.conv2 = Conv2d(32, 64, (3,3))
@@ -56,7 +56,7 @@ Example
     from torch.nn import functional as F
     from torch.optim import SGD
     from torch.utils.data import DataLoader
-    from src import MNISTModel
+    from src.model import MNISTModel
 
 
     def train(*args, **kwargs):
@@ -82,15 +82,20 @@ Example
         optim = SGD(model.parameters(), lr=1e-2)
 
         # losses
-        training_loss = empty((1,)).to(global_rank)
+        training_loss = empty((1,)).to(local_rank)
 
         # training over epochs...
         for e in range(epochs):
+            # DistributedSampler reshuffles only when set_epoch is called;
+            # without this, every epoch sees the same order.
+            if sampler is not None:
+                sampler.set_epoch(e)
+
             # ...and over batches
             for imgs, labels in data:
                 optim.zero_grad()
-                preds = model(imgs.to(global_rank))
-                loss = F.nll_loss(preds, labels.to(global_rank))
+                preds = model(imgs.to(local_rank))
+                loss = F.nll_loss(preds, labels.to(local_rank))
                 loss.backward()
                 optim.step()
             training_loss /= len(data)
@@ -114,7 +119,7 @@ Example
     from torch import empty, load, no_grad
     from torch.backends import cudnn
     from torch.utils.data import DataLoader
-    from src import MNISTModel
+    from src.model import MNISTModel
 
     cudnn.deterministic = True
 
@@ -122,15 +127,19 @@ Example
     @no_grad()
     def evaluate(*args, **kwargs):
         batch_size, dataset, ckptfile = args
-        global_rank, platform = kwargs["global_rank"], kwargs["platform"]
+        global_rank, local_rank, platform = (
+            kwargs["global_rank"],
+            kwargs["local_rank"],
+            kwargs["platform"],
+        )
 
         # set the current device
-        DF.set_device(global_rank, platform)
+        DF.set_device(local_rank, platform)
 
         # move the (distributed) model to correct device (MPS/GPU)
         model = MNISTModel()
         model.load_state_dict(load(ckptfile))
-        model = DF.to(model, global_rank).eval()
+        model = DF.to(model, local_rank).eval()
 
         # sample the dataset
         sampler = DF.get_dataset_sampler(dataset, global_rank, platform)
@@ -139,13 +148,13 @@ Example
         data = DataLoader(dataset, batch_size, sampler=sampler, pin_memory=True)
 
         # evaluation metrics
-        accuracy = empty((1,)).to(global_rank)
+        accuracy = empty((1,)).to(local_rank)
 
         # evaluation in batches
         for imgs, labels in data:
-            preds = model(imgs.to(global_rank))
+            preds = model(imgs.to(local_rank))
             accuracy += (
-                (preds.argmax(-1) == labels.to(global_rank)).sum()
+                (preds.argmax(-1) == labels.to(local_rank)).sum()
             ) / batch_size
         accuracy /= len(data) / 100
 
@@ -165,7 +174,8 @@ Example
     from ddpw import Wrapper, Platform
     from torchvision.datasets.mnist import MNIST
 
-    from src import train, evaluate
+    from src.train import train
+    from src.evaluate import evaluate
 
 
     if __name__ == "__main__":
@@ -174,4 +184,4 @@ Example
         dataset = MNIST(root="./input/datasets/MNIST/", train=True, transform=...)
 
         platform = Platform(...)
-        Wrapper(platform).start(train, model, batch_size, epochs, dataset)
+        Wrapper(platform).start(train, batch_size, epochs, dataset)
