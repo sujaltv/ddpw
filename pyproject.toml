@@ -1,6 +1,6 @@
 [project]
     name = "ddpw"
-    version = "5.5.1"
+    version = "6.0.0"
     description = "A lightweight wrapper that scaffolds PyTorch's Distributed (Data) Parallel."
     authors = [ { name = "Sujal Vijayaraghavan" } ]
     maintainers = [ { name = "Sujal Vijayaraghavan" } ]
@@ -23,7 +23,7 @@
         Documentation = "https://ddpw.projects.sujal.tv"
 
 [build-system]
-    requires = ["uv_build>=0.8.11"]
+    requires = ["uv_build>=0.8.11,<0.12"]
     build-backend = "uv_build"
 
 [tool.uv.build-backend]
