@@ -3,15 +3,6 @@ from os import environ
 from os.path import abspath, expanduser, isabs
 from typing import Any, Callable, Tuple
 
-from torch.distributed import (
-    GroupMember,
-    barrier,
-    destroy_process_group,
-    init_process_group,
-    new_group,
-)
-from torch.multiprocessing import Process, set_start_method
-
 from . import functional as DF
 from .io import IO
 from .platform import Device, Platform
@@ -42,11 +33,42 @@ def setup(
         Default: ``None``.
     """
 
+    from torch.distributed import (
+        Backend,
+        GroupMember,
+        destroy_process_group,
+        init_process_group,
+        new_group,
+    )
+
     node_info = f"Node {node}, GPU {global_rank}(G)/{local_rank}(L)"
 
     IO.print(f"[{node_info}] Initialising the process.")
 
-    if platform.requires_ipc:
+    # A process group is initialised whenever the user hasn't explicitly opted
+    # out (``ipc_groups=None``). This holds even for ``world_size == 1``, so
+    # ``group`` handed to the task is always usable — e.g. ``dist.barrier(group)``
+    # works in both single- and multi-process runs without special-casing.
+    want_pg = platform.ipc_groups is not None
+
+    if platform.backend is not None:
+        backend = platform.backend
+    elif (
+        platform.device in (Device.GPU, Device.SLURM)
+        and platform.world_size > 1
+    ):
+        backend = Backend.NCCL
+    else:
+        # gloo is fine for single-rank PGs and CPU/MPS runs; avoids pulling in
+        # NCCL just to serve a no-op collective.
+        backend = Backend.GLOO
+
+    # NCCL binds to the current CUDA device at init_process_group time, so the
+    # device must be set before the process group is created — otherwise every
+    # rank on a node would bind to GPU 0.
+    DF.set_device(local_rank, platform)
+
+    if want_pg:
         environ["MASTER_ADDR"] = platform.master_addr
         port = environ["MASTER_PORT"] = str(platform.master_port)
 
@@ -56,13 +78,21 @@ def setup(
 
         IO.print(f"[{node_info}] IPC at {im}.")
 
-        # do not specify the rank if process groups are to be used
-        init_process_group(
-            backend=platform.backend,
+        init_kwargs = dict(
+            backend=backend,
             init_method=im,
             rank=global_rank,
             world_size=platform.world_size,
         )
+        if backend == Backend.NCCL:
+            # Eager-init the NCCL process group and bind it to this rank's
+            # device explicitly — avoids lazy-init hangs on first collective
+            # and enables NCCL subgroup fast paths.
+            from torch import device as t_device
+
+            init_kwargs["device_id"] = t_device(f"cuda:{local_rank}")
+
+        init_process_group(**init_kwargs)
 
     # 1. Seed random number generators
     IO.print(
@@ -72,28 +102,30 @@ def setup(
     DF.seed_generators(platform.seed)
 
     # organise groups
-    grp = GroupMember.WORLD
-    if (
-        platform.requires_ipc
-        and platform.ipc_groups is not None
-        and len(platform.ipc_groups) > 0
-    ):
-        device_group = grp
-        for device_group in platform.ipc_groups:
-            if global_rank in device_group:
-                break
-        grp = new_group(
-            ranks=device_group,
-            timeout=timedelta(seconds=30),
-            backend=platform.backend,
-        )
+    grp = GroupMember.WORLD if want_pg else None
+    if want_pg and len(platform.ipc_groups) > 0:
+        # new_group is collective: every rank must enter it for every subgroup,
+        # even ones it doesn't belong to — otherwise ranks deadlock.
+        my_group = None
+        for group_ranks in platform.ipc_groups:
+            g = new_group(
+                ranks=group_ranks,
+                timeout=timedelta(seconds=30),
+                backend=backend,
+            )
+            if global_rank in group_ranks:
+                my_group = g
+        if my_group is None:
+            raise ValueError(
+                f"Global rank {global_rank} is not a member of any group in "
+                f"ipc_groups={platform.ipc_groups}."
+            )
+        grp = my_group
 
-    # 2. Wait for all the processes in this group to synchronise and then start
-    # the task
-    if platform.requires_ipc:
-        barrier(grp)
+    # init_process_group already rendezvouses all ranks, so no extra barrier
+    # is needed before the task starts.
 
-    # 3. Invoke the given task
+    # 2. Invoke the given task
     IO.print(f"[{node_info}] All setup finished.")
     _kwargs = {
         **kwargs,
@@ -104,10 +136,19 @@ def setup(
     }
     target(*args, **_kwargs)
 
-    # 4. Cleanup
-    if platform.requires_ipc:
+    # 3. Cleanup
+    if want_pg:
         destroy_process_group(grp)
     IO.print(f"[{node_info}] Tasks on device complete.")
+
+
+def _spawn_entry(rank, platform, target, args, kwargs):
+    r"""Top-level entry point for :func:`torch.multiprocessing.spawn`.
+
+    Must be importable (pickleable) for the ``spawn`` start method.
+    """
+
+    setup(0, rank, rank, platform, target, *args, **kwargs)
 
 
 class Wrapper:
@@ -137,14 +178,6 @@ class Wrapper:
         IO.print("Initialising the DDP Wrapper.")
         self.platform = platform
 
-        if platform.requires_ipc:
-            try:
-                set_start_method(platform.spawn_method)
-            except RuntimeError as e:
-                IO.print(
-                    f"Warning: {e}. Skipping setting the start method for forks."
-                )
-
     def __gpu(self, target: Callable[[Tuple, dict], Any], *args, **kwargs):
         r"""This method spins up a process for each GPU in the world. It assigns
         the task to be run on each process, `viz.`, distributing the datasets
@@ -163,21 +196,16 @@ class Wrapper:
             setup(0, 0, 0, self.platform, target, *args, **kwargs)
             return
 
+        from torch.multiprocessing import spawn
+
         IO.print(f"Spawning {self.platform.world_size} processes.")
-        processes = []
-
-        # create a process for each GPU in the world
-        for rank in range(self.platform.world_size):
-            p = Process(
-                target=setup,
-                args=(0, rank, rank, self.platform, target, *args),
-                kwargs=kwargs,
-            )
-            processes.append(p)
-            p.start()
-
-        for p in processes:
-            p.join()
+        spawn(
+            _spawn_entry,
+            args=(self.platform, target, args, kwargs),
+            nprocs=self.platform.world_size,
+            join=True,
+            start_method=self.platform.spawn_method or "spawn",
+        )
 
         IO.print("All processes complete.")
 
@@ -196,10 +224,11 @@ class Wrapper:
         executor = AutoExecutor(folder=console_logs)
         executor.update_parameters(
             name=self.platform.name,
-            mem_gb=self.platform.ram,
-            gpus_per_node=self.platform.n_gpus,
-            tasks_per_node=self.platform.n_gpus,
-            cpus_per_task=self.platform.n_cpus,
+            mem_gb=self.platform.mem_per_node,
+            gpus_per_node=self.platform.n_gpus_per_node,
+            tasks_per_node=self.platform.n_gpus_per_node,
+            cpus_per_task=self.platform.n_cpus_per_node
+            // self.platform.n_gpus_per_node,
             nodes=self.platform.n_nodes,
             timeout_min=self.platform.timeout_min,
             slurm_partition=self.platform.partition,
@@ -308,7 +337,7 @@ def wrapper(platform: Platform):
 
             from ddpw import Platform, wrapper
 
-            platform = Platform(device='gpu', n_gpus=2, n_cpus=2)
+            platform = Platform(device='gpu', n_gpus_per_node=2, n_cpus_per_node=2)
 
             @wrapper(platform)
             def run(*args, **kwargs):
