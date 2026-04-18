@@ -77,7 +77,7 @@ ______________
 
     from ddpw import Platform, wrapper
 
-    platform = Platform(device="gpu", n_cpus=32, ram=64, n_gpus=4, verbose=True)
+    platform = Platform(device="gpu", n_cpus_per_node=32, mem_per_node=64, n_gpus_per_node=4, verbose=True)
 
     @wrapper(platform)
     def run(*args, **kwargs):
@@ -104,7 +104,7 @@ As a callable
         pass
 
     # platform (e.g., 4 GPUs)
-    platform = Platform(device='gpu', n_gpus=4)
+    platform = Platform(device='gpu', n_gpus_per_node=4)
 
     # wrapper
     wrapper = Wrapper(platform=platform)

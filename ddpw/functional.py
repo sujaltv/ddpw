@@ -1,31 +1,15 @@
-from random import seed as rand_seed
-from typing import Optional
+from __future__ import annotations
 
-from numpy.random import seed as np_seed
-from torch import Tensor
-from torch import device as t_device
-from torch import distributed as dist
-from torch.cuda import (
-    current_device,
-    is_available,
-    manual_seed_all,
-)
-from torch.cuda import (
-    set_device as __set_device,
-)
-from torch.nn import (
-    BatchNorm1d,
-    BatchNorm2d,
-    BatchNorm3d,
-    Module,
-    SyncBatchNorm,
-)
-from torch.nn.parallel import DistributedDataParallel
-from torch.optim import Optimizer
-from torch.random import manual_seed
-from torch.utils.data import Dataset, DistributedSampler
+from random import seed as rand_seed
+from typing import TYPE_CHECKING, Optional
 
 from .platform import Device, Platform
+
+if TYPE_CHECKING:
+    from torch import device as t_device
+    from torch.nn import Module
+    from torch.optim import Optimizer
+    from torch.utils.data import Dataset, DistributedSampler
 
 
 def seed_generators(seed: int) -> None:
@@ -33,6 +17,10 @@ def seed_generators(seed: int) -> None:
 
     :param int seed: The seed.
     """
+
+    from numpy.random import seed as np_seed
+    from torch.cuda import manual_seed_all
+    from torch.random import manual_seed
 
     rand_seed(seed)
     np_seed(seed)
@@ -56,18 +44,22 @@ def average_params_grads(
         ``False``.
     """
 
-    if not (params and grads):
+    if not (params or grads):
         return
+
+    from torch import distributed as dist
+    from torch import no_grad
 
     world_size = float(dist.get_world_size())
 
-    for p in module.parameters():
-        if p.grad is not None and grads:
-            dist.all_reduce(p.grad, op=dist.ReduceOp.SUM)
-            p.grad /= world_size
-        if p is not None and params:
-            dist.all_reduce(p, op=dist.ReduceOp.SUM)
-            p /= world_size
+    with no_grad():
+        for p in module.parameters():
+            if grads and p.grad is not None:
+                dist.all_reduce(p.grad, op=dist.ReduceOp.SUM)
+                p.grad.div_(world_size)
+            if params:
+                dist.all_reduce(p.data, op=dist.ReduceOp.SUM)
+                p.data.div_(world_size)
 
 
 def optimiser_to(optimiser: Optimizer, device: t_device) -> None:
@@ -81,18 +73,20 @@ def optimiser_to(optimiser: Optimizer, device: t_device) -> None:
     :param torch.device device: The device to which to move the optimiser.
     """
 
+    from torch import Tensor
+
     for param in optimiser.state.values():
         # if any global tensors in the state dict
         if isinstance(param, Tensor):
             param.data = param.data.to(device)
-            if param._grad is not None:
-                param._grad.data = param._grad.data.to(device)
+            if param.grad is not None:
+                param.grad.data = param.grad.data.to(device)
         elif isinstance(param, dict):
             for subparam in param.values():
                 if isinstance(subparam, Tensor):
                     subparam.data = subparam.data.to(device)
-                    if subparam._grad is not None:
-                        subparam._grad.data = subparam._grad.data.to(device)
+                    if subparam.grad is not None:
+                        subparam.grad.data = subparam.grad.data.to(device)
 
 
 def has_batch_norm(module: Module) -> bool:
@@ -104,14 +98,12 @@ def has_batch_norm(module: Module) -> bool:
         layer(s) in it.
     """
 
-    if isinstance(module, (BatchNorm1d, BatchNorm2d, BatchNorm3d)):
-        return True
+    from torch.nn import BatchNorm1d, BatchNorm2d, BatchNorm3d
 
-    for child in module.children():
-        if has_batch_norm(child):
-            return True
-
-    return False
+    return any(
+        isinstance(m, (BatchNorm1d, BatchNorm2d, BatchNorm3d))
+        for m in module.modules()
+    )
 
 
 def to(
@@ -145,6 +137,11 @@ def to(
     :returns torch.nn.Module: The module moved to the appropriate device.
     """
 
+    from torch import device as t_device
+    from torch import distributed as dist
+    from torch.nn import SyncBatchNorm
+    from torch.nn.parallel import DistributedDataParallel
+
     match device:
         case Device.CPU | Device.MPS:
             module = module.to(device.value)
@@ -156,12 +153,8 @@ def to(
             module = SyncBatchNorm.convert_sync_batchnorm(module)
 
         if dist.is_initialized():
-            module = DistributedDataParallel(
-                module,
-                device_ids=[local_rank],
-                *ddp_args,
-                **ddp_kwargs,
-            )
+            ddp_kwargs.setdefault("device_ids", [local_rank])
+            module = DistributedDataParallel(module, *ddp_args, **ddp_kwargs)
 
     return module
 
@@ -186,9 +179,12 @@ def get_dataset_sampler(
         platform.device not in [Device.CPU, Device.MPS]
         and platform.world_size > 1
     ):
+        from torch.utils.data import DistributedSampler
+
         sampler = DistributedSampler(
             dataset,
-            num_replicas=platform.world_size,  # , rank=global_rank
+            num_replicas=platform.world_size,
+            rank=global_rank,
         )
 
     return sampler
@@ -203,7 +199,9 @@ def device(module: Module) -> t_device:
     :returns torch.device: The device of the module.
     """
 
+    from torch import device as t_device
     from torch.backends.mps import is_available as is_mps_available
+    from torch.cuda import current_device, is_available
 
     p = module.parameters()
     try:
@@ -227,4 +225,6 @@ def set_device(local_rank: int, platform: Platform) -> None:
     """
 
     if platform.device in [Device.GPU, Device.SLURM]:
+        from torch.cuda import set_device as __set_device
+
         __set_device(local_rank)
