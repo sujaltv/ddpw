@@ -1,14 +1,14 @@
 [project]
     name = "ddpw"
-    version = "6.0.0"
+    version = "6.1.0"
     description = "A lightweight wrapper that scaffolds PyTorch's Distributed (Data) Parallel."
     authors = [ { name = "Sujal Vijayaraghavan" } ]
     maintainers = [ { name = "Sujal Vijayaraghavan" } ]
     readme = "README.md"
-    requires-python = ">=3.13"
+    requires-python = ">=3.12"
     dependencies = [
-        "submitit>=1.5.3",
-        "torch>=2.8.0",
+        "submitit>=1.5.0",
+        "torch>=2.3.0",
     ]
     license = "BSD-3-Clause"
     license-files = [ "LICENCE" ]

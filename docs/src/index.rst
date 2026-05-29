@@ -3,7 +3,7 @@ Introduction
 
 Distributed Data Parallel Wrapper (DDPW) is a lightweight Python wrapper
 relevant for `PyTorch <https://pytorch.org/>`_ users. It is written in Python
-3.13.
+3.12.
 
 DDPW enables writing compute-intensive tasks (such as training models) without
 deeply worrying about the underlying compute platform (CPU, Apple SoC, GPUs, or

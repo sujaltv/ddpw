@@ -7,7 +7,7 @@ DDPW handles basic logistical tasks such as creating threads on GPUs/SLURM
 nodes, setting up inter-process communication, _etc._, and provides simple,
 default utility methods to move modules to devices and get dataset samplers,
 allowing the user to focus on the main aspects of the task. It is written in
-Python 3.13. The [documentation](https://ddpw.projects.sujal.tv) contains
+Python 3.12. The [documentation](https://ddpw.projects.sujal.tv) contains
 details on how to use this package.
 
 ## Overview
