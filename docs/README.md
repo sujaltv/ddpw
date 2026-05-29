@@ -1,7 +1,7 @@
 # DDPW Documentation
 
 This is the source for the [DDPW Documentation](https://ddpw.projects.sujal.tv)
-written in Python 3.13 with [Sphinx](https://www.sphinx-doc.org/en/master/).
+written in Python 3.12 with [Sphinx](https://www.sphinx-doc.org/en/master/).
 
 ## Set up
 
