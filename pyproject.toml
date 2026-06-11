@@ -1,6 +1,6 @@
 [project]
     name = "ddpw"
-    version = "6.1.0"
+    version = "6.1.2"
     description = "A lightweight wrapper that scaffolds PyTorch's Distributed (Data) Parallel."
     authors = [ { name = "Sujal Vijayaraghavan" } ]
     maintainers = [ { name = "Sujal Vijayaraghavan" } ]

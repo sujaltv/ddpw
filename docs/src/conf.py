@@ -53,7 +53,7 @@ html_context = {
     "github_user": "sujaltv",
     "github_repo": "ddpw",
     "github_version": "master",
-    "copyright_duration": "2021-2025",
+    "copyright_duration": "2021-2026",
     "copyright_url": "https://sujal.tv",
 }
 

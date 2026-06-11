@@ -1,7 +1,7 @@
 <h1 align="center">DDPW</h1>
 
-**Distributed Data Parallel Wrapper (DDPW)** is a lightweight Python wrapper
-relevant to [PyTorch](https://pytorch.org/) users.
+**Distributed Data Parallel Wrapper (DDPW)** is a lightweight Python wrapper for
+[PyTorch](https://pytorch.org/) users.
 
 DDPW handles basic logistical tasks such as creating threads on GPUs/SLURM
 nodes, setting up inter-process communication, _etc._, and provides simple,
