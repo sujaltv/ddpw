@@ -69,7 +69,7 @@ Example
         print(f"Global rank {global_rank}; local rank {local_rank}")
 
         # set the current device
-        DF.set_device(local_rank, platform)
+        DF.set_default_device(local_rank, platform)
 
         # move the (distributed) model to correct device (MPS/GPU)
         model = DF.to(MNISTModel(), local_rank)
@@ -134,7 +134,7 @@ Example
         )
 
         # set the current device
-        DF.set_device(local_rank, platform)
+        DF.set_default_device(local_rank, platform)
 
         # move the (distributed) model to correct device (MPS/GPU)
         model = MNISTModel()

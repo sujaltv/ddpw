@@ -66,7 +66,7 @@ def setup(
     # NCCL binds to the current CUDA device at init_process_group time, so the
     # device must be set before the process group is created — otherwise every
     # rank on a node would bind to GPU 0.
-    DF.set_device(local_rank, platform)
+    DF.set_default_device(local_rank, platform)
 
     if want_pg:
         environ["MASTER_ADDR"] = platform.master_addr

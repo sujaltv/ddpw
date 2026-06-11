@@ -217,14 +217,26 @@ def device(module: Module) -> t_device:
     return device
 
 
-def set_device(local_rank: int, platform: Platform) -> None:
-    r"""Sets the device for the thread from which this is called.
+def set_default_device(local_rank: int, platform: Platform) -> None:
+    r"""Sets the default device for the thread from which this is called.
 
     :param int local_rank: The local rank of the device.
     :param Platform platform: Platform-related configurations.
     """
 
     if platform.device in [Device.GPU, Device.SLURM]:
-        from torch.cuda import set_device as __set_device
+        from torch.cuda import set_default_device as __set_default_device
 
-        __set_device(local_rank)
+        __set_default_device(local_rank)
+
+
+def set_device(local_rank: int, platform: Platform) -> None:
+    r"""Sets the device for the thread from which this is called.
+
+    :param int local_rank: The local rank of the device.
+    :param Platform platform: Platform-related configurations.
+    """
+    from warnings import warn
+
+    warn("use set_default_device() instead")
+    set_default_device(local_rank, platform)
