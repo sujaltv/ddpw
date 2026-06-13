@@ -225,7 +225,7 @@ def set_default_device(local_rank: int, platform: Platform) -> None:
     """
 
     if platform.device in [Device.GPU, Device.SLURM]:
-        from torch.cuda import set_default_device as __set_default_device
+        from torch import set_default_device as __set_default_device
 
         __set_default_device(local_rank)
 
