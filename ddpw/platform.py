@@ -1,5 +1,8 @@
+#!/usr/bin/env python3
+
 from __future__ import annotations
 
+from argparse import Namespace
 from dataclasses import dataclass, field
 from enum import Enum
 from random import randint
@@ -325,3 +328,24 @@ class Platform:
         """
 
         IO.print(details)
+
+    @staticmethod
+    def from_args(args: Namespace) -> Platform:
+        r"""
+        Returns Platform by parsing relevant CLI arguments and constructing the
+        object.
+
+        :param Namespace args: arguments storage object.
+
+        :returns Platform: Platform object constructed from the CLI arguments.
+        """
+
+        from .argparser import _PREFIX
+
+        kwargs = {
+            k[len(_PREFIX) :]: v
+            for k, v in vars(args).items()
+            if k.startswith(_PREFIX)
+        }
+
+        return Platform(**kwargs)
