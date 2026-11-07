@@ -23,6 +23,12 @@ extensions = [
     "sphinx_inline_tabs",
 ]
 
+_font_stack = (
+    'Manrope, system-ui, -apple-system, "Segoe UI", Roboto, '
+    '"Helvetica Neue", Arial, sans-serif'
+)
+_mono_stack = '"Adwaita Mono", monospace'
+
 html_theme = "furo"
 html_show_sourcelink = False
 html_show_copyright = True
@@ -44,6 +50,32 @@ html_theme_options = {
         },
     ],
     "sidebar_hide_name": True,
+    # Fonts and link colours follow quill-template's styles.css: links
+    # within the site are blue; links that leave it are a muted rust red.
+    "light_css_variables": {
+        "font-stack": _font_stack,
+        "font-stack--headings": _font_stack,
+        "font-stack--monospace": _mono_stack,
+        "color-link": "#1a73e8",
+        "color-link--hover": "#1557b0",
+        "color-link--visited": "#1a73e8",
+        "color-link--visited--hover": "#1557b0",
+        "color-link-external": "#a8442a",
+        "color-link-external--hover": "#86321c",
+        # Side-panel entries a step below the body size; see custom.css for
+        # their headings.
+        "sidebar-item-font-size": "var(--font-size--small)",
+        "sidebar-search-input-font-size": "var(--font-size--small)",
+        "toc-font-size": "var(--font-size--small)",
+    },
+    "dark_css_variables": {
+        "color-link": "#6cb2e8",
+        "color-link--hover": "#9ccbf0",
+        "color-link--visited": "#6cb2e8",
+        "color-link--visited--hover": "#9ccbf0",
+        "color-link-external": "#e5906f",
+        "color-link-external--hover": "#efb096",
+    },
 }
 html_static_path = ["_static"]
 html_css_files = ["fonts.css", "custom.css"]

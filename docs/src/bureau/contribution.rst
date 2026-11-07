@@ -6,8 +6,8 @@ Contribution
 Development
 ^^^^^^^^^^^
 
-All packages are installed with ``uv`` and listed `pyproject.toml`. An
-existing environment can be update with ``conda env update``:
+All packages are installed with ``uv`` and listed in ``pyproject.toml``. An
+existing environment can be update with ``uv``:
 
 .. code-block:: bash
 
@@ -21,13 +21,13 @@ dependencies can be installed with `uv`:
 
 .. code-block:: bash
 
-    > uv sync [--active] --group docs
+    uv sync [--active] --group docs
 
 
 ``Makefile`` has recipes to compile and build the documentation into HTML:
 
 .. code-block:: bash
 
-    > cd docs
-    > make clean html
+    cd docs
+    make clean html
 

@@ -3,15 +3,16 @@
  * ------------------------------------------------------------------------- */
 
 * {
-    --code-font-size: 9.25pt; 
+    --code-font-size: 9.25pt;
     --api-font-size: 10.5pt;
+    --body-font-size: 0.825rem;
     --header-height: 40px;
-    --footer-height: 85px;
+    --footer-height: 95px;
     --footer-padding-top: 5px;
 
-    --heading-font: "VC Honey SemiBold Deck", serif;
-    --main-font: "SF Pro Display", sans-serif;
-    --mono-font: "SF Mono", monospace;
+    --heading-font: var(--font-stack--headings);
+    --main-font: var(--font-stack);
+    --mono-font: var(--font-stack--monospace);
 
     --main-content-padding: 20px;
 }
@@ -20,52 +21,113 @@ html {
     scroll-padding-top: var(--header-height);
 }
 
+/* Furo enlarges everything by 10% only from 97em up. Every screen takes
+   the same size, so text reads alike from phones to large monitors. */
+html {
+    font-size: 110%;
+}
+
+/* Text follows quill-template: Manrope at 15px, every weight 50 above the
+   usual step, as Manrope reads light at the usual ones. */
 body {
     font-family: var(--main-font);
-    letter-spacing: 0.25pt;
-    /* line-height: 14pt; */
+    font-size: var(--body-font-size);
+    line-height: 1.7;
+    font-weight: 485;
+    letter-spacing: 0.02em;
 }
 
-h1, h2, h3, h4, h5, h6, .rubric {
+:where(code, pre, kbd, samp) {
+    letter-spacing: normal;
+}
+
+:where(b, strong) {
+    font-weight: 750;
+}
+
+/* Six heading levels step evenly from 1.125rem (h1) down to the body
+   size (h6), as in a quill-template post. `--rank` counts the steps above
+   the body size. The space around a heading shrinks with it, and a heading
+   sits closer to the text that it opens than to the text before it. */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.rubric {
+    --rank: 0;
     font-family: var(--heading-font);
-    font-weight: 500 !important;
-}
- 
-h1 {
-    font-size: 20pt;
+    font-weight: 650;
+    font-size: calc(0.9375rem + 0.0375rem * var(--rank));
+    line-height: 1.45;
+    margin-top: calc(1.5rem + 0.15rem * var(--rank));
+    margin-bottom: calc(0.6rem + 0.055rem * var(--rank));
 }
 
-h2 {
-    margin-top: 20px;
-    font-size: 14pt;
+h1 {
+    --rank: 5;
+}
+
+h2,
+.rubric {
+    --rank: 4;
 }
 
 h3 {
-    font-size: 12pt;
+    --rank: 3;
 }
 
 h4 {
-    font-size: 10pt;
+    --rank: 2;
 }
 
+h5 {
+    --rank: 1;
+}
+
+/* The two levels nearest the body size are told apart by colour. */
+h5,
+h6 {
+    color: var(--color-foreground-secondary);
+}
+
+/* The heading's lower margin alone sets the gap to what follows. */
+:is(h1, h2, h3, h4, h5, h6) + * {
+    margin-top: 0;
+}
+
+article {
+    line-height: 1.65;
+}
+
+article p {
+    margin-block: 1.35em;
+}
+
+article section {
+    margin: 0;
+}
+
+/* Links are never underlined; on hover they only shift colour. Links that
+   leave the site take their own colour; .link-internal and .link-external
+   force either colour regardless of the markup. */
 a {
     text-decoration: none !important;
+    transition: color 0.2s;
 }
 
-.prima-facie a:visited {
-    color: var(--color-link) !important;
+a:is(.reference.external, [target="_blank"], .link-external):not(.muted-link, .link-internal),
+a:is(.reference.external, [target="_blank"], .link-external):not(.muted-link, .link-internal):visited {
+    color: var(--color-link-external);
 }
 
-p {
-    font-family: var(--main-font);
-    font-size: 11.625pt;
+a:is(.reference.external, [target="_blank"], .link-external):not(.muted-link, .link-internal):hover {
+    color: var(--color-link-external--hover);
 }
 
-article > section:not(:last-child) {
-   margin-bottom: 40px; 
-}
-
-pre, .code {
+pre,
+.code {
     font-family: var(--mono-font);
 }
 
@@ -77,12 +139,14 @@ figure {
     margin-bottom: 20px !important;
 }
 
-figure img, img {
+figure img,
+img {
     margin-top: 20px;
     border-radius: 10px;
 }
 
-figure img:not(:has(+ figcaption)), img:not(:has(+ figcaption)) {
+figure img:not(:has(+ figcaption)),
+img:not(:has(+ figcaption)) {
     margin-bottom: 20px;
 }
 
@@ -98,7 +162,7 @@ figcaption > p:first-child {
 }
 
 figcaption .caption-text::before {
-    content: 'Figure. ';
+    content: "Figure. ";
     font-weight: bold;
 }
 
@@ -106,7 +170,6 @@ figcaption .caption-text {
     font-size: 0.85rem;
     color: var(--color-foreground-secondary);
 }
-
 
 /* ----------------------------------------------------------------------------
  *                              Layout styling
@@ -149,7 +212,7 @@ header {
     font-family: var(--heading-font);
 }
 
-@media(min-width: 82em) {
+@media (min-width: 82em) {
     .header-style {
         box-shadow: 0 0 5px 1px var(--color-background-border);
     }
@@ -161,7 +224,8 @@ header {
 }
 
 .header-style span {
-    font-size: 22pt;
+    font-size: 1.25rem;
+    font-weight: 650;
     text-decoration: none !important;
 }
 
@@ -188,6 +252,12 @@ footer {
     color: var(--color-foreground-secondary);
     line-height: 1.5;
     font-size: 0.75em;
+}
+
+.footer-style .copyright {
+    font-size: 1.125em;
+    margin-top: 0.75em;
+    margin-bottom: 0.5em;
 }
 
 .main-content-pane {
@@ -271,15 +341,15 @@ footer {
 .field-list > dd > ul > li > p > strong,
 .field-list > dd > ul > li > p > a.reference.internal,
 .field-list > dd > ul > li > p > em {
-  font-family: var(--font-stack--monospace);
-  font-style: normal;
-  font-size: var(--code-font-size);
-  color: var(--color-api-name);
+    font-family: var(--font-stack--monospace);
+    font-style: normal;
+    font-size: var(--code-font-size);
+    color: var(--color-api-name);
 }
 
 .field-list > dd > p > a.reference.internal,
 .field-list > dd > ul > li > p > a.reference.internal {
-  font-weight: bold;
+    font-weight: bold;
 }
 
 .sidebar-drawer {
@@ -287,7 +357,8 @@ footer {
     left: 0px;
 }
 
-.footnote-list, .footnote-list * {
+.footnote-list,
+.footnote-list * {
     font-size: 0.75rem;
 }
 
@@ -312,6 +383,13 @@ footer {
     display: none;
 }
 
+/* Side-panel headings sit at the body size. Set in rem terms, as Furo's
+   percentages compound with the smaller size of the list around them. */
+.sidebar-tree .caption,
+.toc-title {
+    font-size: var(--body-font-size);
+}
+
 .sidebar-scroll {
     /* 80px below = searchbox height */
     max-height: calc(100% - var(--header-height) - var(--footer-height) - 80px);
@@ -331,10 +409,13 @@ footer {
 
 .toc-scroll {
     height: 100%;
-    max-height: calc(100vh - var(--header-height) - 2 * var(--header-padding) - var(--footer-padding-top) - var(--footer-height));
+    max-height: calc(
+        100vh - var(--header-height) - 2 * var(--header-padding) -
+            var(--footer-padding-top) - var(--footer-height)
+    );
 }
 
-@media(max-width: 82em) {
+@media (max-width: 82em) {
     .main-content-nav-bar {
         display: flex;
         border-bottom: 1px solid var(--color-background-border);
@@ -352,12 +433,13 @@ footer {
         overflow: scroll;
     }
 
-    .toc-overlay-icon, .nav-overlay-icon {
+    .toc-overlay-icon,
+    .nav-overlay-icon {
         display: flex;
     }
 }
 
-@media(min-width: 82em) {
+@media (min-width: 82em) {
     .sidebar-drawer {
         visibility: visible;
     }
@@ -420,10 +502,9 @@ hr.docutils {
 }
 
 [class^="toctree-l"].has-children > label {
-    visibility:collapse;
+    visibility: collapse;
 }
 
 [class^="toctree-l"]:not(.has-children) a {
     color: var(--color-link) !important;
 }
-
